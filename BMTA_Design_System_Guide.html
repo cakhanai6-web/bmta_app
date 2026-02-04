@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTA 브타 - 디자인 시스템 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .color-card { transition: transform 0.2s; cursor: pointer; }
+        .color-card:hover { transform: scale(1.05); }
+        .code-box { background-color: #1e293b; color: #e2e8f0; font-family: monospace; padding: 1rem; border-radius: 0.75rem; font-size: 0.85rem; }
+        .flutter-accent { color: #38bdf8; }
+        .css-accent { color: #f472b6; }
+    </style>
+</head>
+<body class="pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 text-white font-black italic px-2 py-0.5 rounded shadow-sm">BMTA</div>
+                <span class="font-bold text-slate-800 tracking-tight">Design System Guide</span>
+            </div>
+            <div class="text-[10px] font-bold text-slate-400 border border-slate-200 px-2 py-1 rounded">Flutter v3.x Compatible</div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        
+        <!-- Introduction -->
+        <section class="mb-16">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">CSS 없이 디자인하는 <br><span class="text-blue-600">브타의 스타일 가이드</span></h1>
+                <p class="text-lg text-slate-500 leading-relaxed">
+                    Flutter는 웹의 CSS 대신 <strong>'위젯 기반 스타일링'</strong>을 사용합니다. 이 가이드에서는 우리가 구상한 디자인 아이디어를 어떻게 실제 코드로 구현할지, 그리고 AI에게 어떻게 지시해야 최상의 디자인 결과가 나오는지 설명합니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 1: Core Colors -->
+        <section class="mb-20">
+            <h2 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                1. 브타 핵심 컬러 팔레트
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="color-card bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
+                    <div class="h-32 bg-blue-600 rounded-2xl mb-4"></div>
+                    <p class="font-black text-slate-800">Connect Blue</p>
+                    <p class="text-xs text-slate-400 font-mono mb-2">#2563EB</p>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">신뢰와 이동을 상징하는 메인 컬러. 주요 버튼 및 상단 바에 사용.</p>
+                </div>
+                <div class="color-card bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
+                    <div class="h-32 bg-amber-500 rounded-2xl mb-4"></div>
+                    <p class="font-black text-slate-800">Mobility Amber</p>
+                    <p class="text-xs text-slate-400 font-mono mb-2">#F59E0B</p>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">활력과 포인트를 주는 강조 컬러. 알림 배지 및 포인트 시스템에 사용.</p>
+                </div>
+                <div class="color-card bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
+                    <div class="h-32 bg-slate-800 rounded-2xl mb-4"></div>
+                    <p class="font-black text-slate-800">Deep Slate</p>
+                    <p class="text-xs text-slate-400 font-mono mb-2">#1E293B</p>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">가독성을 위한 텍스트 컬러. 배경과의 명도 대비를 최우선으로 함.</p>
+                </div>
+                <div class="color-card bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
+                    <div class="h-32 bg-slate-100 rounded-2xl mb-4 border border-slate-200"></div>
+                    <p class="font-black text-slate-800">Soft Light</p>
+                    <p class="text-xs text-slate-400 font-mono mb-2">#F8FAFC</p>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">눈의 피로를 줄이는 배경 컬러. 콘텐츠 분리를 위한 카드 배경에 사용.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: CSS vs Flutter Comparison -->
+        <section class="mb-20">
+            <h2 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                <span class="w-2 h-8 bg-pink-500 rounded-full"></span>
+                2. CSS에서 Flutter 스타일로 사고하기
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        웹 개발자에게 <strong>CSS</strong>가 있다면, Flutter 개발자에게는 <strong>BoxDecoration</strong>과 <strong>TextStyle</strong>이 있습니다. AI에게 요청할 때 이 용어들을 섞어주면 훨씬 정확한 코드를 짜줍니다.
+                    </p>
+                    <div class="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
+                        <h4 class="font-bold text-indigo-900 mb-2">💡 바이브 코딩 팁</h4>
+                        <p class="text-xs text-indigo-700 leading-relaxed">
+                            "이 카드를 CSS의 shadow-lg 처럼 그림자를 주고, border-radius를 20px로 해줘"라고 말하세요. AI는 이를 Flutter의 <code class="bg-indigo-200 px-1 rounded text-indigo-900">BoxShadow</code>와 <code class="bg-indigo-200 px-1 rounded text-indigo-900">BorderRadius</code>로 즉시 변환합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="code-box">
+                        <div class="flex justify-between mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500"><span>Web CSS</span></div>
+                        <span class="css-accent">.card</span> { <br>
+                        &nbsp;&nbsp;background: <span class="css-accent">#ffffff</span>;<br>
+                        &nbsp;&nbsp;border-radius: <span class="css-accent">16px</span>;<br>
+                        &nbsp;&nbsp;padding: <span class="css-accent">20px</span>;<br>
+                        &nbsp;&nbsp;box-shadow: <span class="css-accent">0 4px 6px rgba(0,0,0,0.1)</span>;<br>
+                        }
+                    </div>
+                    <div class="text-center text-slate-300">▼</div>
+                    <div class="code-box">
+                        <div class="flex justify-between mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500"><span>Flutter Dart</span></div>
+                        Container(<br>
+                        &nbsp;&nbsp;decoration: BoxDecoration(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;color: <span class="flutter-accent">Colors.white</span>,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;borderRadius: <span class="flutter-accent">BorderRadius.circular(16)</span>,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;boxShadow: [<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flutter-accent">BoxShadow(blurRadius: 6, offset: Offset(0, 4))</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;],<br>
+                        &nbsp;&nbsp;),<br>
+                        &nbsp;&nbsp;padding: <span class="flutter-accent">const EdgeInsets.all(20)</span>,<br>
+                        )
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Component Lab -->
+        <section class="mb-20">
+            <h2 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                <span class="w-2 h-8 bg-amber-500 rounded-full"></span>
+                3. 인터랙티브 컴포넌트 랩
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Buttons -->
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
+                    <h4 class="text-xs font-black text-slate-400 mb-6 uppercase tracking-widest">Buttons</h4>
+                    <div class="space-y-4 w-full">
+                        <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-blue-100">Primary Button</button>
+                        <button class="w-full border-2 border-blue-600 text-blue-600 font-bold py-3 rounded-2xl">Secondary Button</button>
+                    </div>
+                    <div class="mt-8 pt-6 border-t w-full">
+                        <p class="text-[10px] font-bold text-slate-400 mb-2">프롬프트 예시:</p>
+                        <p class="text-[11px] text-slate-500 italic bg-slate-50 p-3 rounded-xl border">"주요 버튼은 Connect Blue 배경에 둥근 모서리 16px, 하단에 살짝 파란색 그림자를 넣어줘."</p>
+                    </div>
+                </div>
+                <!-- Cards -->
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
+                    <h4 class="text-xs font-black text-slate-400 mb-6 uppercase tracking-widest">Feed Cards</h4>
+                    <div class="w-full bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-2">
+                        <div class="w-12 h-3 bg-blue-200 rounded-full"></div>
+                        <div class="w-full h-12 bg-white rounded-xl border border-slate-200"></div>
+                        <div class="flex justify-between"><div class="w-10 h-2 bg-slate-200 rounded"></div><div class="w-4 h-4 bg-blue-600 rounded-full"></div></div>
+                    </div>
+                    <div class="mt-8 pt-6 border-t w-full">
+                        <p class="text-[10px] font-bold text-slate-400 mb-2">프롬프트 예시:</p>
+                        <p class="text-[11px] text-slate-500 italic bg-slate-50 p-3 rounded-xl border">"게시글 카드는 배경을 흰색으로 하고, 아주 얇은 테두리와 넉넉한 padding(16)을 줘."</p>
+                    </div>
+                </div>
+                <!-- Inputs -->
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
+                    <h4 class="text-xs font-black text-slate-400 mb-6 uppercase tracking-widest">Input Fields</h4>
+                    <div class="w-full space-y-4">
+                        <div class="w-full h-12 bg-slate-50 rounded-2xl border-none flex items-center px-4 text-slate-400 text-sm">텍스트를 입력하세요...</div>
+                    </div>
+                    <div class="mt-8 pt-6 border-t w-full">
+                        <p class="text-[10px] font-bold text-slate-400 mb-2">프롬프트 예시:</p>
+                        <p class="text-[11px] text-slate-500 italic bg-slate-50 p-3 rounded-xl border">"입력창은 테두리 없이 연한 회색 배경(#F1F5F9)을 쓰고 폰트 크기는 14pt로 해줘."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: UX Consistency Analysis -->
+        <section class="mb-20">
+            <div class="bg-slate-900 rounded-[4rem] p-10 text-white overflow-hidden relative">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-black italic">디자인 일관성의 힘</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            사용자는 앱의 색상과 버튼의 모양이 일정할 때 심리적인 안정감과 신뢰를 느낍니다. 
+                            브타는 <strong>Connect Blue</strong>를 통해 서비스의 전문성을 유지하고, 
+                            <strong>Mobility Amber</strong>를 통해 사용자의 다음 행동을 자연스럽게 유도합니다.
+                        </p>
+                        <div class="flex gap-4">
+                            <div class="bg-white/10 p-4 rounded-2xl border border-white/10">
+                                <span class="block text-2xl font-black text-blue-400">92%</span>
+                                <span class="text-[10px] uppercase font-bold text-slate-500">Visual Trust</span>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-2xl border border-white/10">
+                                <span class="block text-2xl font-black text-amber-400">85%</span>
+                                <span class="text-[10px] uppercase font-bold text-slate-500">Navigation Speed</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="designImpactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Design Principles for Transit -->
+        <section>
+            <h2 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                <span class="w-2 h-8 bg-green-500 rounded-full"></span>
+                4. 이동 환경을 위한 디자인 원칙 (Accessibility)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="flex gap-6 items-start">
+                    <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">🖐️</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">한 손 조작 최적화</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">버스와 지하철에서 손잡이를 잡고도 엄지손가락으로 모든 버튼을 누를 수 있도록 하단 탭과 큰 버튼을 배치합니다.</p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">⚡</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">빠른 시각적 피드백</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">진동(Haptic)과 애니메이션을 통해 버튼이 확실히 눌렸음을 인지시킵니다.</p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">📏</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">넉넉한 터치 영역</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">흔들리는 차 안에서 오동작을 방지하기 위해 터치 대상 간의 간격을 최소 8px 이상 확보합니다.</p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">🌓</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">야간 안심 모드 (Dark)</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">밤늦게 택시를 타는 유저를 위해 눈부심을 최소화하는 다크 테마를 기본으로 준비합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-10 mt-20">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">BMTA Brand & Style Guide</p>
+            <p class="text-[10px] text-slate-300">© 2026 BMTA Project. 이 가이드는 Flutter 기반 앱 개발을 위해 설계되었습니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        window.onload = function() {
+            const ctx = document.getElementById('designImpactChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['일관된 컬러', '직관적 레이아웃', '타이포그래피', '여백의 미'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#2563EB', '#F59E0B', '#64748B', '#94A3B8'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94A3B8', font: { size: 10, weight: 'bold' }, padding: 20 }
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>

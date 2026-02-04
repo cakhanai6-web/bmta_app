@@ -1,0 +1,38 @@
+name: bmta_app
+description: "BMTA - 모든 타는 곳의 이야기 (대중교통 익명 커뮤니티)"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # 상태 관리: Riverpod
+  flutter_riverpod: ^2.5.1
+  
+  # 아이콘: Lucide Icons
+  lucide_icons: ^0.257.0
+  
+  # 폰트: Google Fonts
+  google_fonts: ^6.2.1
+
+  # 이미지 및 UI 유틸리티
+  cached_network_image: ^3.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # 향후 로고나 이미지를 넣을 때 주석을 해제하고 사용하세요
+  # assets:
+  #   - assets/images/
