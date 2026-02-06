@@ -204,8 +204,8 @@ class _LoginCard extends StatelessWidget {
             child: TextField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(LucideIcons.mail),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(LucideIcons.mail),
                 hintText: '이메일 주소를 입력하세요',
               ),
             ),

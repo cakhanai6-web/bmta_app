@@ -27,7 +27,7 @@ final class AppTheme {
   static const double _radiusMd = 16;
 
   static ThemeData light() {
-    final colorScheme = ColorScheme(
+    const colorScheme = ColorScheme(
       brightness: Brightness.light,
       primary: _connectBlue,
       onPrimary: Colors.white,
@@ -38,9 +38,6 @@ final class AppTheme {
       surface: _surface,
       onSurface: _deepSlate,
       outline: _outline,
-      // background is deprecated in M3, but still useful in ThemeData fields.
-      background: _softLight,
-      onBackground: _deepSlate,
     );
 
     final base = ThemeData(
@@ -186,7 +183,7 @@ final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: radius16,
-          borderSide: BorderSide(color: _connectBlue, width: 2),
+          borderSide: const BorderSide(color: _connectBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: radius16,
