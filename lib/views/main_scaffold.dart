@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'feed/feed_view.dart';
+import 'mypage/mypage_view.dart';
 
 /// 메인 스캐폴드: 하단 네비게이션 바를 포함한 앱의 메인 구조
 class MainScaffold extends StatefulWidget {
@@ -13,13 +14,17 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 2; // 기본: BMTA 피드
+  
+  // 로그인 상태 (임시: 실제 인증 시스템 연동 전까지는 true로 가정)
+  // TODO: Firebase Auth 또는 실제 인증 시스템과 연동
+  bool _isLoggedIn = true;
 
-  // 각 탭에 해당하는 화면 (현재는 피드만 구현)
+  // 각 탭에 해당하는 화면
   final List<Widget> _pages = [
     const _PlaceholderView(title: '버스타'),
     const _PlaceholderView(title: '지하철타'),
     const FeedView(),
-    const _PlaceholderView(title: '내정보'),
+    const MypageView(),
   ];
 
   @override
@@ -65,9 +70,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             tooltip: '알림',
           ),
           IconButton(
-            onPressed: () {
-              setState(() => _currentIndex = 3);
-            },
+            onPressed: _handleMypageClick,
             icon: const Icon(LucideIcons.user),
             tooltip: '마이페이지',
           ),
@@ -115,6 +118,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   index: 3,
                   icon: LucideIcons.user,
                   label: '내정보',
+                  onTap: _handleMypageClick,
                 ),
               ],
             ),
@@ -129,6 +133,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     required int index,
     required IconData icon,
     required String label,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -136,7 +141,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     return Expanded(
       child: InkWell(
-        onTap: () {
+        onTap: onTap ?? () {
           setState(() => _currentIndex = index);
         },
         child: Column(
@@ -160,6 +165,22 @@ class _MainScaffoldState extends State<MainScaffold> {
         ),
       ),
     );
+  }
+
+  /// 내정보 탭 클릭 핸들러 (로그인 체크 포함)
+  void _handleMypageClick() {
+    if (!_isLoggedIn) {
+      // 로그인하지 않은 경우 → 로그인 페이지로 이동
+      // TODO: 실제 로그인 페이지 구현 후 Navigator.push로 이동
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('로그인이 필요합니다. (로그인 페이지는 추후 구현 예정)'),
+        ),
+      );
+    } else {
+      // 로그인한 경우 → 내정보 페이지 표시
+      setState(() => _currentIndex = 3);
+    }
   }
 
   String _getTitle() {

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTA 통합 프로토타입 v2.6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .screen { display: none; height: 100%; flex-direction: column; background: white; }
+        .screen.active { display: flex; }
+        .mobile-container {
+            width: 100%; max-width: 420px; height: 100vh; margin: 0 auto;
+            background: #fff; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        @media (min-width: 420px) {
+            .mobile-container { height: 840px; margin-top: 20px; border-radius: 40px; border: 8px solid #1e293b; }
+        }
+        .animate-in { animation: fadeIn 0.25s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-btn.active { color: #4f46e5; border-bottom: 2px solid #4f46e5; }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container" id="app-root">
+    <!-- 통합 헤더 -->
+    <header id="app-header" class="h-16 flex items-center justify-between px-6 border-b shrink-0 bg-white z-20">
+        <div id="header-left" class="flex items-center gap-2">
+            <div class="bg-indigo-600 p-1 rounded-lg">
+                <span class="text-white font-black italic text-[10px] tracking-tighter">BMTA</span>
+            </div>
+            <h1 id="header-title" class="font-bold text-slate-800 tracking-tight text-lg">브타</h1>
+        </div>
+        <div id="header-right" class="flex gap-4 text-slate-400">
+            <button onclick="showAlert('알림 내역이 없습니다.')"><i data-lucide="bell" class="w-5 h-5"></i></button>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <div class="flex-1 relative overflow-hidden bg-slate-50">
+        
+        <!-- [로그인 화면] -->
+        <section id="screen-login" class="screen bg-white items-center justify-center p-10">
+            <div class="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-xl shadow-indigo-100">
+                <i data-lucide="bus" class="text-white w-10 h-10"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-800 italic mb-1 tracking-tighter">BMTA</h2>
+            <p class="text-slate-400 font-medium mb-12 text-sm">모든 타는 곳의 이야기, 브타</p>
+            <div class="w-full space-y-4">
+                <input class="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-500 font-semibold" placeholder="이메일 주소" value="tjddnd123@gmail.com">
+                <input class="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-500 font-semibold" type="password" placeholder="비밀번호" value="********">
+                <div class="pt-4 space-y-3">
+                    <button onclick="performLogin()" class="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-lg active:scale-95 transition-all">로그인</button>
+                    <button onclick="showAlert('회원가입 프로세스를 시작합니다.')" class="w-full bg-slate-100 text-slate-600 font-black py-5 rounded-2xl active:scale-95 transition-all">회원가입</button>
+                </div>
+                <button class="w-full text-slate-400 font-bold text-xs underline mt-2">아이디 / 비밀번호 찾기</button>
+            </div>
+        </section>
+
+        <!-- [브타 피드] -->
+        <section id="screen-feed" class="screen active overflow-y-auto">
+            <div class="p-4 space-y-4">
+                <!-- 핫이슈 카드 -->
+                <div class="bg-gradient-to-br from-indigo-600 to-blue-600 rounded-[2.5rem] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-20"><i data-lucide="flame" class="w-20 h-20"></i></div>
+                    <p class="text-[10px] font-black opacity-70 mb-1">🔥 지금 브타 핫이슈</p>
+                    <p class="font-bold text-sm leading-snug">강남역 2번 출구 앞 붕어빵 줄 상황 실시간 제보!</p>
+                    <div class="flex gap-3 mt-4 text-[9px] font-black opacity-80 uppercase tracking-tighter">
+                        <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="w-3 h-3"></i> 124</span>
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-3 h-3"></i> 42</span>
+                        <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> 3,420</span>
+                    </div>
+                </div>
+
+                <!-- 피드 리스트 -->
+                <div class="bg-white p-5 rounded-[2.2rem] border border-slate-100 shadow-sm space-y-3 active:scale-[0.98] transition-all cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xs shrink-0"><i data-lucide="bus" class="w-5 h-5"></i></div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="text-[10px] font-black text-indigo-600 tracking-tight">버스 143</span>
+                                    <span class="bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase">#실시간톡</span>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm tracking-tight">143번 버스 기사님 진짜 친절하시네요!</h4>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-slate-300 font-bold">방금 전</span>
+                    </div>
+                    <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium">타자마자 밝게 인사해주시고, 내리는 분들한테도 일일이 인사해주셔서 아침부터 기분 좋아졌어요!</p>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-50">
+                        <div class="flex gap-4 text-[10px] font-black text-slate-400">
+                            <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="w-3 h-3"></i> 12</span>
+                            <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-3 h-3"></i> 3</span>
+                            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> 420</span>
+                        </div>
+                        <span class="text-[10px] text-slate-300 font-bold">익명의승객</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [버스타 실시간] -->
+        <section id="screen-bus" class="screen overflow-y-auto items-center justify-center text-slate-300 font-bold">
+            <i data-lucide="bus" class="w-12 h-12 mb-2 opacity-20"></i>
+            버스 도착 정보 준비 중
+        </section>
+
+        <!-- [지하철타 실시간] -->
+        <section id="screen-metro" class="screen overflow-y-auto items-center justify-center text-slate-300 font-bold">
+            <i data-lucide="train" class="w-12 h-12 mb-2 opacity-20"></i>
+            지하철 도착 정보 준비 중
+        </section>
+
+        <!-- [내정보 메인] -->
+        <section id="screen-mypage" class="screen overflow-y-auto animate-in">
+            <div class="p-6 space-y-6">
+                <!-- 프로필 카드 (본인인증 라벨 삭제) -->
+                <div class="flex items-center gap-5 bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full border-4 border-indigo-50 flex items-center justify-center overflow-hidden">
+                        <i data-lucide="user" class="w-8 h-8 text-slate-300"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight" id="disp-nickname">익명의 승객</h3>
+                    </div>
+                </div>
+
+                <!-- 포인트 정보 -->
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex justify-between items-center">
+                    <div class="flex items-center gap-3 font-bold text-slate-700 text-sm">
+                        <i data-lucide="coins" class="w-5 h-5 text-amber-500"></i> 보유 포인트
+                    </div>
+                    <span class="text-xl font-black text-slate-800">1,250 P</span>
+                </div>
+
+                <!-- 메뉴 리스트 -->
+                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 divide-y divide-slate-50 overflow-hidden">
+                    <button onclick="navigateTo('notes')" class="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3 font-bold text-slate-700 text-sm"><i data-lucide="mail" class="w-5 h-5 text-slate-400"></i> 쪽지함</div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                    </button>
+                    <button onclick="navigateTo('settings')" class="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3 font-bold text-slate-700 text-sm"><i data-lucide="settings" class="w-5 h-5 text-slate-400"></i> 설정</div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                    </button>
+                    <button onclick="navigateTo('announcements')" class="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3 font-bold text-slate-700 text-sm"><i data-lucide="megaphone" class="w-5 h-5 text-slate-400"></i> 공지사항</div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                    </button>
+                    <button onclick="showAlert('고객센터 준비 중입니다.')" class="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3 font-bold text-slate-700 text-sm"><i data-lucide="headphones" class="w-5 h-5 text-slate-400"></i> 고객센터</div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                    </button>
+                </div>
+
+                <div class="pt-4 text-center space-y-4">
+                    <button onclick="performLogout()" class="text-sm font-bold text-slate-300 hover:text-red-400 transition">로그아웃</button>
+                    <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Version 1.0.2 (Build 2602)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [쪽지함 리스트] -->
+        <section id="screen-notes" class="screen overflow-y-auto animate-in">
+            <div class="flex flex-col h-full bg-white">
+                <div class="p-4 border-b flex gap-2 bg-white sticky top-0 z-10">
+                    <button class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black">전체</button>
+                    <button class="flex-1 py-2 bg-slate-50 text-slate-400 rounded-xl text-xs font-bold">받은 쪽지</button>
+                    <button class="flex-1 py-2 bg-slate-50 text-slate-400 rounded-xl text-xs font-bold">보낸 쪽지</button>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div onclick="navigateTo('note-detail')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-1 active:scale-[0.98] transition-transform cursor-pointer">
+                        <h4 class="text-sm font-bold text-slate-800 line-clamp-1">혹시 아까 목도리 주인인가요?</h4>
+                        <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                            <span>보낸사람: 친절한승객</span>
+                            <span>2026.02.06 14:20</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [쪽지 상세 페이지] -->
+        <section id="screen-note-detail" class="screen p-6 space-y-6 overflow-y-auto animate-in">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3" onclick="showAlert('사용자 차단/신고 팝업을 호출합니다.')">
+                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"><i data-lucide="user" class="w-5 h-5 text-slate-300"></i></div>
+                    <div>
+                        <p class="text-sm font-black text-slate-800">친절한승객</p>
+                    </div>
+                </div>
+                <button onclick="showAlert('신고하시겠습니까?')"><i data-lucide="alert-triangle" class="w-5 h-5 text-slate-300 hover:text-red-500"></i></button>
+            </div>
+            <div class="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 min-h-[200px] flex flex-col">
+                <h4 class="font-black text-slate-800 mb-4 tracking-tight">혹시 아까 목도리 주인인가요?</h4>
+                <p class="text-sm text-slate-600 leading-relaxed font-medium flex-1">143번 버스 맨 뒷자리에 파란색 목도리를 두고 내리신 것 같아 제가 기사님께 맡겨두었습니다! 정릉 종점에서 확인해보세요.</p>
+                <p class="text-[10px] text-slate-300 mt-8 font-bold text-right">2026.02.06 14:20</p>
+            </div>
+            <button onclick="showAlert('답장 보내기 화면으로 이동합니다.')" class="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="send" class="w-4 h-4 text-white"></i> 답장 보내기
+            </button>
+        </section>
+
+        <!-- [설정 메인] -->
+        <section id="screen-settings" class="screen overflow-y-auto animate-in">
+            <div class="p-6 space-y-8">
+                <div class="flex flex-col items-center gap-3 py-4">
+                    <div class="relative">
+                        <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center border-4 border-white shadow-md"><i data-lucide="user" class="w-10 h-10 text-slate-300"></i></div>
+                        <button class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full border-2 border-white"><i data-lucide="camera" class="w-3 h-3"></i></button>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400">프로필 사진 변경</p>
+                </div>
+                
+                <div class="space-y-3">
+                    <label class="text-xs font-black text-slate-400 uppercase ml-1">닉네임 변경</label>
+                    <div class="flex gap-2">
+                        <input id="input-nickname" type="text" value="익명의 승객" readonly class="flex-1 px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none transition-all">
+                        <button id="btn-nickname-toggle" onclick="toggleNicknameEdit()" class="px-6 bg-slate-800 text-white rounded-2xl text-xs font-black whitespace-nowrap">변경</button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="navigateTo('pw-change')" class="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-left text-sm font-bold text-slate-700 flex justify-between items-center transition active:bg-slate-50">비밀번호 변경 <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i></button>
+                    <button onclick="navigateTo('email-change')" class="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-left text-sm font-bold text-slate-700 flex justify-between items-center transition active:bg-slate-50">이메일 변경 <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i></button>
+                    <div class="flex items-center justify-between px-5 py-4 bg-white border border-slate-100 rounded-2xl">
+                        <span class="text-sm font-bold text-slate-700">알림 설정</span>
+                        <button onclick="this.classList.toggle('bg-indigo-600'); this.classList.toggle('bg-slate-200');" class="w-12 h-7 bg-indigo-600 rounded-full relative transition-colors"><div class="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [비밀번호 변경 페이지] -->
+        <section id="screen-pw-change" class="screen p-8 space-y-6 animate-in">
+            <h2 class="text-2xl font-black text-slate-800 mb-4 leading-tight">비밀번호를<br>새로 설정하세요.</h2>
+            <div class="space-y-4">
+                <input type="password" placeholder="현재 비밀번호" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none">
+                <div class="h-px bg-slate-100 w-full my-2"></div>
+                <input type="password" placeholder="새 비밀번호" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none">
+                <input type="password" placeholder="새 비밀번호 확인" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none">
+            </div>
+            <button onclick="showAlert('비밀번호가 변경되었습니다.'); navigateTo('settings')" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl mt-6">비밀번호 변경하기</button>
+        </section>
+
+        <!-- [이메일 변경] -->
+        <section id="screen-email-change" class="screen p-8 space-y-6 animate-in">
+            <h2 class="text-2xl font-black text-slate-800 mb-4 leading-tight">이메일 인증을<br>진행해주세요.</h2>
+            <div class="space-y-4">
+                <div class="flex gap-2">
+                    <input id="input-email" type="text" value="tjddnd123@gmail.com" class="flex-1 px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none transition-all">
+                    <button id="btn-email-verify" onclick="sendVerificationCode()" class="px-6 bg-slate-800 text-white rounded-2xl text-xs font-black whitespace-nowrap">인증하기</button>
+                </div>
+                <div id="verify-area" class="hidden space-y-3 animate-in">
+                    <div class="flex gap-2">
+                        <input id="input-code" type="text" maxlength="6" placeholder="인증번호 6자리" class="flex-1 px-6 py-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl text-sm font-black text-indigo-600 outline-none text-center tracking-[0.5em]">
+                        <button onclick="confirmCode()" class="px-8 bg-indigo-600 text-white rounded-2xl text-xs font-black">확인</button>
+                    </div>
+                    <p id="micro-text" class="text-[11px] font-bold ml-2"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [공지사항] -->
+        <section id="screen-announcements" class="screen overflow-y-auto animate-in">
+            <div class="p-4 space-y-3">
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm" onclick="showAlert('공지 상세 내용을 불러옵니다.')">
+                    <h4 class="text-sm font-bold text-slate-800 mb-1 leading-snug">브타 포인트 정책 및 쪽지 발송 비용 안내</h4>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">2026.02.01</p>
+                </div>
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm" onclick="showAlert('공지 상세 내용을 불러옵니다.')">
+                    <h4 class="text-sm font-bold text-slate-800 mb-1 leading-snug">브타 v1.0 정식 서비스 런칭 공지</h4>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">2026.01.30</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 하단 네비게이션 바 -->
+    <nav id="bottom-nav" class="h-16 bg-white border-t flex justify-between items-center px-6 shrink-0 z-10 shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
+        <button onclick="navigateTo('bus')" class="nav-btn flex flex-col items-center gap-1 text-slate-300" id="btn-bus">
+            <i data-lucide="bus" class="w-5 h-5"></i><span class="text-[9px] font-black">버스타</span>
+        </button>
+        <button onclick="navigateTo('metro')" class="nav-btn flex flex-col items-center gap-1 text-slate-300" id="btn-metro">
+            <i data-lucide="map" class="w-5 h-5"></i><span class="text-[9px] font-black">지하철타</span>
+        </button>
+        <button onclick="navigateTo('feed')" class="nav-btn flex flex-col items-center gap-1 text-indigo-600" id="btn-feed">
+            <i data-lucide="message-square" class="w-5 h-5"></i><span class="text-[9px] font-black">브타</span>
+        </button>
+        <button onclick="handleMypageClick()" class="nav-btn flex flex-col items-center gap-1 text-slate-300" id="btn-mypage">
+            <i data-lucide="user" class="w-5 h-5"></i><span class="text-[9px] font-black">내정보</span>
+        </button>
+    </nav>
+
+    <!-- 전역 알럿 오버레이 -->
+    <div id="alert-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-10">
+        <div class="bg-white rounded-[2.5rem] p-8 text-center space-y-6 shadow-2xl max-w-xs w-full animate-in">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto"><i data-lucide="info" class="w-8 h-8"></i></div>
+            <p id="alert-msg" class="font-bold text-slate-800 leading-relaxed text-sm"></p>
+            <button onclick="closeAlert()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg">확인</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isLoggedIn = false;
+
+    function navigateTo(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById('screen-' + screenId);
+        if (target) target.classList.add('active');
+
+        const titles = { 
+            'feed': '브타', 'bus': '버스타 실시간', 'metro': '지하철타 실시간', 'mypage': '내정보', 
+            'notes': '쪽지함', 'note-detail': '쪽지 상세', 'settings': '설정', 
+            'pw-change': '비밀번호 변경', 'email-change': '이메일 변경', 'announcements': '공지사항' 
+        };
+        
+        const isSub = ['notes', 'note-detail', 'settings', 'pw-change', 'email-change', 'announcements'].includes(screenId);
+        const headerTitle = titles[screenId] || '브타';
+        const headerElem = document.getElementById('app-header');
+        const bottomNav = document.getElementById('bottom-nav');
+
+        if (headerElem) {
+            headerElem.style.display = screenId === 'login' ? 'none' : 'flex';
+            const backAction = (['note-detail'].includes(screenId)) ? "navigateTo('notes')" : 
+                               (['pw-change', 'email-change'].includes(screenId) ? "navigateTo('settings')" : "navigateTo('mypage')");
+            
+            headerElem.innerHTML = isSub ? 
+                `<button onclick="${backAction}" class="p-4 -ml-4"><i data-lucide="chevron-left" class="w-6 h-6 text-slate-800"></i></button><h1 class="font-bold text-slate-800 text-center flex-1 pr-6">${headerTitle}</h1>` :
+                `<div class="flex items-center gap-2"><div class="bg-indigo-600 p-1 rounded-lg"><span class="text-white font-black italic text-[10px] tracking-tighter">BMTA</span></div><h1 class="font-bold text-slate-800 tracking-tight text-lg">${headerTitle}</h1></div><div class="flex gap-4 text-slate-400"><button onclick="showAlert('알림함 준비 중')"><i data-lucide="bell" class="w-5 h-5"></i></button></div>`;
+        }
+
+        const navIdMap = { 'feed': 'feed', 'bus': 'bus', 'metro': 'metro', 'mypage': 'mypage', 'notes': 'mypage', 'settings': 'mypage', 'announcements': 'mypage', 'note-detail': 'mypage' };
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-indigo-600', 'text-slate-300'));
+        const activeNav = document.getElementById('btn-' + (navIdMap[screenId] || 'feed'));
+        if (activeNav) activeNav.classList.replace('text-slate-300', 'text-indigo-600');
+        
+        if (bottomNav) bottomNav.style.display = screenId === 'login' ? 'none' : 'flex';
+
+        lucide.createIcons();
+    }
+
+    function handleMypageClick() {
+        if (!isLoggedIn) navigateTo('login');
+        else navigateTo('mypage');
+    }
+
+    function performLogin() {
+        isLoggedIn = true;
+        navigateTo('mypage');
+    }
+
+    function performLogout() {
+        isLoggedIn = false;
+        showAlert('로그아웃 되었습니다.');
+        navigateTo('feed');
+    }
+
+    function toggleNicknameEdit() {
+        const input = document.getElementById('input-nickname');
+        const btn = document.getElementById('btn-nickname-toggle');
+        if (input.readOnly) {
+            input.readOnly = false;
+            input.focus();
+            input.classList.replace('bg-slate-50', 'bg-indigo-50');
+            btn.innerText = '확인';
+            btn.classList.replace('bg-slate-800', 'bg-indigo-600');
+        } else {
+            input.readOnly = true;
+            input.classList.replace('bg-indigo-50', 'bg-slate-50');
+            btn.innerText = '변경';
+            btn.classList.replace('bg-indigo-600', 'bg-slate-800');
+            document.getElementById('disp-nickname').innerText = input.value;
+            showAlert('닉네임이 성공적으로 변경되었습니다.');
+        }
+    }
+
+    function sendVerificationCode() {
+        const input = document.getElementById('input-email');
+        const btn = document.getElementById('btn-email-verify');
+        input.readOnly = true;
+        input.classList.add('opacity-50');
+        btn.innerText = '인증번호 발송됨';
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+        document.getElementById('verify-area').classList.remove('hidden');
+        showAlert(input.value + '로 인증번호 6자리가 발송되었습니다.');
+    }
+
+    function confirmCode() {
+        const code = document.getElementById('input-code').value;
+        const micro = document.getElementById('micro-text');
+        if (code === '123456') { 
+            micro.innerText = '이메일이 정상적으로 변경되었습니다.';
+            micro.className = 'text-[11px] font-bold ml-2 text-green-600';
+            setTimeout(() => navigateTo('settings'), 1500);
+        } else {
+            micro.innerText = '인증번호를 다시 확인해 주세요.';
+            micro.className = 'text-[11px] font-bold ml-2 text-red-500';
+        }
+    }
+
+    function showAlert(msg) {
+        const alertMsg = document.getElementById('alert-msg');
+        const alertOverlay = document.getElementById('alert-overlay');
+        if (alertMsg && alertOverlay) {
+            alertMsg.innerText = msg;
+            alertOverlay.classList.remove('hidden');
+            lucide.createIcons();
+        }
+    }
+    function closeAlert() { 
+        const alertOverlay = document.getElementById('alert-overlay');
+        if (alertOverlay) alertOverlay.classList.add('hidden'); 
+    }
+
+    window.onload = () => lucide.createIcons();
+</script>
+</body>
+</html>
