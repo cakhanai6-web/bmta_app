@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "577966694504",
+    "project_id": "my-bmta-project",
+    "storage_bucket": "my-bmta-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:577966694504:android:47c4e241ce19574fe3dbdd",
+        "android_client_info": {
+          "package_name": "com.example.bmta_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEDfswSnZjLoc6EXz9GEaprK-IRsjHS3k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
