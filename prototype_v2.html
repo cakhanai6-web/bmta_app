@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTA Integrated Prototype v3.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --connect-blue: #2563EB; }
+        .bg-connect-blue { background-color: var(--connect-blue); }
+        .text-connect-blue { color: var(--connect-blue); }
+        .border-connect-blue { border-color: var(--connect-blue); }
+        body { font-family: 'Pretendard', sans-serif; background-color: #F3F4F6; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .topic-filter.active { background-color: var(--connect-blue); color: white; border-color: var(--connect-blue); }
+        .sticky-search { position: sticky; top: 0; z-index: 20; background: white; }
+    </style>
+</head>
+<body class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col">
+
+    <header class="p-4 border-b flex justify-between items-center bg-white z-30">
+        <h1 class="text-xl font-bold text-connect-blue">BMTA</h1>
+        <div class="flex gap-4 text-gray-600">
+            <i class="fa-regular fa-bell cursor-pointer"></i>
+            <i class="fa-solid fa-magnifying-glass cursor-pointer"></i>
+        </div>
+    </header>
+
+    <main id="app-content" class="flex-1 overflow-y-auto pb-20">
+        <div id="feed-page">
+            <div class="flex gap-2 p-3 overflow-x-auto no-scrollbar border-b bg-white">
+                <button class="topic-filter active shrink-0 px-4 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-layer-group"></i> 전체
+                </button>
+                <button class="topic-filter shrink-0 px-4 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 text-gray-500">
+                    <i class="fa-regular fa-comments"></i> 실시간톡
+                </button>
+                <button class="topic-filter shrink-0 px-4 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 text-gray-500">
+                    <i class="fa-solid fa-user-group"></i> 사람을 찾아요
+                </button>
+                <button class="topic-filter shrink-0 px-4 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 text-gray-500">
+                    <i class="fa-solid fa-box-open"></i> 분실물 제보
+                </button>
+                <button class="topic-filter shrink-0 px-4 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 text-gray-500">
+                    <i class="fa-regular fa-star"></i> 이용 후기
+                </button>
+            </div>
+
+            <div class="sticky-search p-3 border-b shadow-sm">
+                <div class="relative">
+                    <input type="text" placeholder="전체 주제에서 제목+내용 검색" class="w-full bg-gray-100 rounded-lg py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-gray-400 text-xs"></i>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-red-500 flex items-center gap-1">
+                        <i class="fa-solid fa-fire"></i> 실시간 핫이슈
+                    </h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+                    <p class="text-sm font-bold truncate">출근길 9호선 급행 열차 지연 상황 공유합니다...</p>
+                    <div class="flex gap-3 mt-2 text-[10px] text-gray-400">
+                        <span><i class="fa-solid fa-up-long"></i> 42</span>
+                        <span><i class="fa-regular fa-comment"></i> 15</span>
+                        <span><i class="fa-regular fa-eye"></i> 1.2k</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feed-items" class="divide-y">
+                <div class="p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-[10px] text-gray-400">P</div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold">지하철빌런킬러</span>
+                            <span class="text-[10px] text-gray-400">12분 전</span>
+                        </div>
+                        <i class="fa-solid fa-ellipsis-vertical ml-auto text-gray-300"></i>
+                    </div>
+                    <h4 class="text-sm font-bold mb-1">방금 강남역 10번출구 쪽 분실물 봤어요</h4>
+                    <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">파란색 지갑인데 벤치 위에 덩그러니 놓여있네요. 주인이 빨리 찾으러 오셨으면 좋겠습니다. 제가 들고 있으려다가 그냥 그 자리에 두었습니다.</p>
+                    <div class="flex items-center gap-4 mt-4 text-gray-400">
+                        <button class="flex items-center gap-1.5 text-xs hover:text-connect-blue transition-colors">
+                            <i class="fa-regular fa-thumbs-up"></i> BM UP 5
+                        </button>
+                        <span class="flex items-center gap-1.5 text-xs"><i class="fa-regular fa-comment"></i> 2</span>
+                        <span class="flex items-center gap-1.5 text-xs ml-auto"><i class="fa-regular fa-eye"></i> 128</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="fixed bottom-24 right-6 w-14 h-14 bg-connect-blue text-white rounded-full shadow-xl flex items-center justify-center text-xl z-20">
+                <i class="fa-solid fa-pen"></i>
+            </button>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 max-w-md w-full bg-white border-t flex justify-around p-3 safe-area-bottom z-30">
+        <button onclick="navTo('bus')" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-solid fa-bus text-lg"></i>
+            <span class="text-[10px]">버스타</span>
+        </button>
+        <button onclick="navTo('subway')" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-solid fa-subway text-lg"></i>
+            <span class="text-[10px]">지하철타</span>
+        </button>
+        <button onclick="navTo('home')" id="nav-home" class="flex flex-col items-center gap-1 text-connect-blue">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px]">브타</span>
+        </button>
+        <button onclick="navTo('mypage')" id="nav-mypage" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-regular fa-user text-lg"></i>
+            <span class="text-[10px]">내정보</span>
+        </button>
+    </nav>
+
+    <template id="tpl-mypage">
+        <div class="p-0">
+            <div class="p-6 bg-white flex items-center gap-4">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center border">
+                    <i class="fa-solid fa-user text-2xl text-gray-300"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-bold">브타라이더</h3>
+                        <i class="fa-solid fa-pen text-xs text-gray-300"></i>
+                    </div>
+                    <div class="bg-gray-100 inline-block px-2 py-0.5 rounded text-[10px] font-bold text-connect-blue mt-1">
+                        1,250 P
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-2 space-y-1">
+                <div onclick="navTo('dm')" class="px-6 py-4 bg-white flex justify-between items-center cursor-pointer active:bg-gray-50">
+                    <span class="text-sm font-medium">쪽지함</span>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">2</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
+                    </div>
+                </div>
+                <div onclick="navTo('favorites')" class="px-6 py-4 bg-white flex justify-between items-center cursor-pointer active:bg-gray-50">
+                    <span class="text-sm font-medium">즐겨찾기</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
+                </div>
+                <div onclick="navTo('settings')" class="px-6 py-4 bg-white flex justify-between items-center border-t border-gray-50 cursor-pointer active:bg-gray-50">
+                    <span class="text-sm font-medium">설정</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
+                </div>
+                <div class="px-6 py-4 bg-white text-sm text-gray-600">공지사항</div>
+                <div class="px-6 py-4 bg-white text-sm text-gray-600">고객센터</div>
+            </div>
+
+            <div class="p-8 text-center">
+                <button class="text-xs text-gray-400 underline decoration-gray-300">로그아웃</button>
+                <p class="text-[10px] text-gray-300 mt-2">v0.1.5 (Beta)</p>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-favorites">
+        <div class="p-0">
+            <div class="p-4 flex items-center gap-4 border-b">
+                <i onclick="navTo('mypage')" class="fa-solid fa-arrow-left cursor-pointer"></i>
+                <h2 class="font-bold">즐겨찾기</h2>
+            </div>
+            <div class="divide-y">
+                <div class="p-4 bg-white relative">
+                    <h4 class="text-sm font-bold mb-1">출근길 아침 버스 팁 공유</h4>
+                    <p class="text-xs text-gray-500 line-clamp-2">경기도에서 강남역 오는 광역버스 타시는 분들을 위한 꿀팁입니다. 미리 줄 서지 않아도...</p>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-[10px] text-gray-400">2026-02-20</span>
+                        <i class="fa-solid fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+                <div class="p-4 bg-white">
+                    <p class="text-sm text-gray-300 italic">삭제된 피드입니다.</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        function navTo(page) {
+            const content = document.getElementById('app-content');
+            const navHome = document.getElementById('nav-home');
+            const navMypage = document.getElementById('nav-mypage');
+
+            // Reset navigation styles
+            [navHome, navMypage].forEach(el => {
+                el.classList.remove('text-connect-blue');
+                el.classList.add('text-gray-400');
+            });
+
+            if (page === 'mypage') {
+                content.innerHTML = document.getElementById('tpl-mypage').innerHTML;
+                navMypage.classList.add('text-connect-blue');
+            } else if (page === 'favorites') {
+                content.innerHTML = document.getElementById('tpl-favorites').innerHTML;
+            } else if (page === 'home') {
+                location.reload();
+            } else {
+                content.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">준비 중인 페이지입니다.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

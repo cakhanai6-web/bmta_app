@@ -17,7 +17,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   
   // 로그인 상태 (임시: 실제 인증 시스템 연동 전까지는 true로 가정)
   // TODO: Firebase Auth 또는 실제 인증 시스템과 연동
-  bool _isLoggedIn = true;
+  final bool _isLoggedIn = true;
 
   // 각 탭에 해당하는 화면
   final List<Widget> _pages = [

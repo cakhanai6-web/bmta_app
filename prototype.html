@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTA Integrated Prototype v2.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --connect-blue: #2563EB; }
+        .bg-connect-blue { background-color: var(--connect-blue); }
+        .text-connect-blue { color: var(--connect-blue); }
+        .border-connect-blue { border-color: var(--connect-blue); }
+        body { font-family: 'Pretendard', sans-serif; background-color: #F3F4F6; }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col">
+
+    <header class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h1 class="text-xl font-bold text-connect-blue">BMTA</h1>
+        <div class="flex gap-4 text-gray-600">
+            <i class="fa-regular fa-bell cursor-pointer"></i>
+            <i class="fa-solid fa-magnifying-glass cursor-pointer"></i>
+        </div>
+    </header>
+
+    <main id="app-content" class="flex-1 overflow-y-auto pb-20">
+        <section class="p-4">
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
+                <p class="text-sm text-blue-800 font-medium">📢 제보 보상 포인트 상향!</p>
+                <p class="text-xs text-blue-600 mt-1">실시간 교통 정보를 공유하고 포인트를 쌓으세요.</p>
+            </div>
+            <div id="feed-items" class="space-y-4">
+                <div class="border-b pb-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+                        <span class="font-bold text-sm">익명의 버스타</span>
+                        <span class="text-xs text-gray-400 ml-auto">2분 전</span>
+                    </div>
+                    <p class="text-sm text-gray-800">2호선 강남역 방향 지금 사람 엄청 많아요! 지하철 타실 분들 참고하세요.</p>
+                    <div class="flex gap-4 mt-3 text-gray-500 text-xs">
+                        <span><i class="fa-regular fa-comment"></i> 12</span>
+                        <span><i class="fa-regular fa-heart"></i> 5</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 max-w-md w-full bg-white border-t flex justify-around p-3 safe-area-bottom">
+        <button onclick="navTo('bus')" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-solid fa-bus text-lg"></i>
+            <span class="text-[10px]">버스타</span>
+        </button>
+        <button onclick="navTo('subway')" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-solid fa-subway text-lg"></i>
+            <span class="text-[10px]">지하철타</span>
+        </button>
+        <button onclick="navTo('home')" class="flex flex-col items-center gap-1 text-connect-blue">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px]">브타</span>
+        </button>
+        <button onclick="navTo('mypage')" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fa-regular fa-user text-lg"></i>
+            <span class="text-[10px]">내정보</span>
+        </button>
+    </nav>
+
+    <template id="tpl-signup">
+        <div class="p-6">
+            <div class="mb-8">
+                <div class="flex gap-2 mb-4">
+                    <div class="h-1 flex-1 bg-connect-blue rounded"></div>
+                    <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                    <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                    <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">BMTA에<br>오신 것을 환영해요!</h2>
+                <p class="text-gray-500 text-sm">서비스 이용을 위해 약관에 동의해 주세요.</p>
+            </div>
+            <div class="space-y-4 mb-8">
+                <div class="flex items-center gap-3 p-4 border rounded-xl">
+                    <input type="checkbox" class="w-5 h-5 accent-connect-blue">
+                    <span class="text-sm font-medium">전체 동의하기</span>
+                </div>
+            </div>
+            <button onclick="alert('다음 단계: 이메일 인증')" class="w-full bg-connect-blue text-white py-4 rounded-xl font-bold">다음으로</button>
+        </div>
+    </template>
+
+    <template id="tpl-mypage">
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-user text-2xl text-gray-300"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">브타라이더</h3>
+                    <p class="text-sm text-gray-500">rider@bmta.com</p>
+                </div>
+                <button class="ml-auto text-xs border p-2 rounded-lg">편집</button>
+            </div>
+            
+            <div class="bg-gray-900 text-white p-5 rounded-2xl mb-8">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs opacity-70">보유 포인트</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </div>
+                <div class="text-2xl font-bold">1,250 P</div>
+                <p class="text-[10px] opacity-50 mt-2">* 정보 제보 및 댓글 활동으로 적립된 포인트입니다.</p>
+            </div>
+
+            <div class="space-y-2 text-sm font-medium">
+                <div onclick="navTo('dm')" class="p-4 border-b flex justify-between items-center cursor-pointer">
+                    <span>쪽지함</span>
+                    <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">2</span>
+                </div>
+                <div class="p-4 border-b">공지사항</div>
+                <div class="p-4 border-b">고객센터</div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        function navTo(page) {
+            const content = document.getElementById('app-content');
+            if (page === 'mypage') {
+                content.innerHTML = document.getElementById('tpl-mypage').innerHTML;
+            } else if (page === 'dm') {
+                content.innerHTML = `
+                    <div class="p-4">
+                        <h2 class="text-xl font-bold mb-4">쪽지함</h2>
+                        <div class="space-y-4">
+                            <div onclick="alert('쪽지 상세로 이동')" class="flex gap-4 p-3 border-b cursor-pointer">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full"></div>
+                                <div>
+                                    <div class="font-bold text-sm">운영진</div>
+                                    <div class="text-xs text-gray-500 truncate w-48">포인트 적립 정책이 변경되었습니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                location.reload(); // 홈으로 리로드 (간이 구현)
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTA 회원가입 디자인 시안</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #2563EB; 
+            --secondary: #F59E0B;
+            --bg: #F8FAFC;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); color: #1e293b; margin: 0; padding: 0; }
+        
+        .mobile-container {
+            width: 100%; max-width: 420px; height: 100vh; margin: 0 auto;
+            background: #fff; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        @media (min-width: 420px) {
+            .mobile-container { height: 840px; margin-top: 20px; border-radius: 40px; border: 8px solid #1e293b; }
+        }
+
+        .step-content { display: none; }
+        .step-content.active { display: flex; flex-direction: column; height: 100%; animation: slideIn 0.3s ease-out; }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .progress-bar { height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .input-field {
+            width: 100%; padding: 18px 24px; background-color: #f1f5f9;
+            border-radius: 16px; border: 2px solid transparent; transition: all 0.2s;
+            font-weight: 600; outline: none;
+        }
+        .input-field:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+
+        .btn-primary {
+            background-color: var(--primary); color: white; padding: 20px;
+            border-radius: 16px; font-weight: 800; font-size: 16px;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-primary:disabled { background-color: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .check-item {
+            padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .check-item.active { border-color: var(--primary); background-color: #eff6ff; }
+        
+        .profile-img-container {
+            width: 100px; height: 100px; border-radius: 35px; background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            margin: 0 auto; border: 4px solid #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <!-- Header -->
+    <header class="h-16 flex items-center px-6 shrink-0 z-10">
+        <button onclick="goBack()" id="back-btn" class="p-2 -ml-2"><i data-lucide="chevron-left"></i></button>
+        <div class="flex-1 px-4">
+            <div class="progress-bar">
+                <div id="progress" class="progress-fill" style="width: 25%;"></div>
+            </div>
+        </div>
+        <div class="w-10"></div>
+    </header>
+
+    <div class="flex-1 relative overflow-hidden px-8 pb-10">
+        
+        <!-- STEP 1: 약관동의 -->
+        <section id="step-1" class="step-content active">
+            <div class="pt-6 mb-10">
+                <h2 class="text-3xl font-black text-slate-800 leading-tight">반가워요!<br>브타 시작을 위해<br>약관에 동의해주세요.</h2>
+            </div>
+            
+            <div class="space-y-4 flex-1">
+                <div class="check-item flex items-center justify-between" onclick="toggleCheck('all')">
+                    <div class="flex items-center gap-3">
+                        <div id="check-all-icon" class="w-6 h-6 rounded-full border-2 flex items-center justify-center border-slate-300">
+                            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span class="font-black text-slate-800">약관에 모두 동의합니다</span>
+                    </div>
+                </div>
+                <div class="h-px bg-slate-100 mx-2 my-4"></div>
+                <div class="space-y-4 px-2">
+                    <div class="flex justify-between items-center group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-slate-300" id="check-1"></i>
+                            <span class="text-sm font-bold text-slate-500">[필수] 서비스 이용약관 동의</span>
+                        </div>
+                        <button class="text-slate-300"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="flex justify-between items-center group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-slate-300" id="check-2"></i>
+                            <span class="text-sm font-bold text-slate-500">[필수] 개인정보 수집 및 이용 동의</span>
+                        </div>
+                        <button class="text-slate-300"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="flex justify-between items-center group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-slate-300" id="check-3"></i>
+                            <span class="text-sm font-bold text-slate-500">[선택] 위치 정보 이용 동의</span>
+                        </div>
+                        <button class="text-slate-300"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="nextStep(2)" class="btn-primary w-full mt-6">동의하고 시작하기</button>
+        </section>
+
+        <!-- STEP 2: 이메일 인증 -->
+        <section id="step-2" class="step-content">
+            <div class="pt-6 mb-10">
+                <h2 class="text-3xl font-black text-slate-800 leading-tight">로그인에 사용할<br>이메일을 적어주세요.</h2>
+                <p class="text-slate-400 mt-2 text-sm font-bold">비밀번호 찾기 시 꼭 필요해요.</p>
+            </div>
+            
+            <div class="space-y-6 flex-1">
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase ml-1">Email Address</label>
+                    <div class="flex gap-2">
+                        <input type="email" placeholder="example@gmail.com" class="input-field flex-1">
+                        <button onclick="sendCode()" class="bg-slate-800 text-white px-5 rounded-2xl text-[11px] font-black whitespace-nowrap">인증발송</button>
+                    </div>
+                </div>
+                <div id="verify-box" class="space-y-2 hidden animate-slide-up">
+                    <label class="text-[11px] font-black text-blue-600 uppercase ml-1">Verification Code</label>
+                    <input type="text" placeholder="숫자 6자리 입력" maxlength="6" class="input-field text-center tracking-[0.5em] border-blue-200 bg-blue-50">
+                    <p class="text-[10px] font-bold text-blue-500 ml-1">남은 시간 03:00</p>
+                </div>
+            </div>
+            
+            <button onclick="nextStep(3)" class="btn-primary w-full mt-6">이메일 인증 완료</button>
+        </section>
+
+        <!-- STEP 3: 비밀번호 설정 -->
+        <section id="step-3" class="step-content">
+            <div class="pt-6 mb-10">
+                <h2 class="text-3xl font-black text-slate-800 leading-tight">나만 아는<br>비밀번호를 정해볼까요?</h2>
+            </div>
+            
+            <div class="space-y-6 flex-1">
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase ml-1">Password</label>
+                    <input type="password" placeholder="영문, 숫자 포함 8자 이상" class="input-field">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase ml-1">Confirm Password</label>
+                    <input type="password" placeholder="비밀번호 한 번 더 입력" class="input-field">
+                </div>
+                <div class="flex items-center gap-2 px-1">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i>
+                    <span class="text-xs font-bold text-slate-400">비밀번호가 일치합니다.</span>
+                </div>
+            </div>
+            
+            <button onclick="nextStep(4)" class="btn-primary w-full mt-6">거의 다 됐어요!</button>
+        </section>
+
+        <!-- STEP 4: 닉네임 설정 -->
+        <section id="step-4" class="step-content">
+            <div class="pt-6 mb-8 text-center">
+                <h2 class="text-3xl font-black text-slate-800 leading-tight">축하합니다!<br>마지막 단계예요.</h2>
+            </div>
+            
+            <div class="space-y-10 flex-1">
+                <div class="profile-img-container">
+                    <i data-lucide="user" class="w-12 h-12 text-slate-300"></i>
+                    <button class="absolute -bottom-1 -right-1 bg-blue-600 text-white p-2 rounded-full border-2 border-white shadow-md">
+                        <i data-lucide="camera" class="w-3 h-3"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-400 text-center block uppercase tracking-widest">Create Nickname</label>
+                    <input type="text" value="정릉동핵인싸" class="input-field text-center text-xl font-black text-indigo-600 border-indigo-100 bg-white">
+                    <p class="text-[10px] font-bold text-center text-slate-300">닉네임은 언제든 변경할 수 있어요</p>
+                </div>
+
+                <div class="bg-blue-50 p-5 rounded-[2rem] border border-blue-100">
+                    <div class="flex gap-3">
+                        <div class="bg-blue-600 text-white w-8 h-8 rounded-xl flex items-center justify-center shrink-0">🎁</div>
+                        <div>
+                            <p class="text-xs font-black text-blue-900 mb-1">가입 축하 웰컴 포인트!</p>
+                            <p class="text-[10px] font-medium text-blue-700 leading-relaxed">지금 가입하면 즉시 사용할 수 있는 <span class="font-black text-blue-900">1,000P</span>를 드립니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="finish()" class="btn-primary w-full mt-6">브타 시작하기</button>
+        </section>
+
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+
+    function nextStep(step) {
+        document.querySelector(`#step-${currentStep}`).classList.remove('active');
+        document.querySelector(`#step-${step}`).classList.add('active');
+        currentStep = step;
+        
+        // Progress bar update
+        const progress = (step / 4) * 100;
+        document.getElementById('progress').style.width = `${progress}%`;
+        
+        lucide.createIcons();
+    }
+
+    function goBack() {
+        if (currentStep > 1) {
+            nextStep(currentStep - 1);
+        } else {
+            alert('로그인 화면으로 돌아갑니다.');
+        }
+    }
+
+    function toggleCheck(type) {
+        const iconAll = document.getElementById('check-all-icon');
+        if (type === 'all') {
+            const isActive = iconAll.classList.contains('bg-indigo-600');
+            if (isActive) {
+                iconAll.classList.remove('bg-indigo-600', 'border-indigo-600');
+                document.querySelectorAll('[id^="check-"]').forEach(i => i.classList.replace('text-indigo-600', 'text-slate-300'));
+            } else {
+                iconAll.classList.add('bg-indigo-600', 'border-indigo-600');
+                document.querySelectorAll('[id^="check-"]').forEach(i => i.classList.replace('text-slate-300', 'text-indigo-600'));
+            }
+        }
+    }
+
+    function sendCode() {
+        document.getElementById('verify-box').classList.remove('hidden');
+        alert('인증번호 123456이 발송되었습니다.');
+    }
+
+    function finish() {
+        alert('회원가입이 완료되었습니다! 메인 피드로 이동합니다.');
+    }
+
+    window.onload = () => lucide.createIcons();
+</script>
+</body>
+</html>
