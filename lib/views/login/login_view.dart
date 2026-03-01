@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import 'signup_view.dart';
 
 /// SCR-001: 로그인 화면 UI
 ///
@@ -254,8 +255,10 @@ class _LoginCard extends StatelessWidget {
           SizedBox(height: spacing.x2), // 16
           OutlinedButton.icon(
             onPressed: () {
-              // ignore: avoid_print
-              print('회원가입 클릭');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SignupView()),
+              );
             },
             icon: const Icon(LucideIcons.userPlus),
             label: const Text('처음 오셨나요? 회원가입'),
