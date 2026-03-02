@@ -225,39 +225,28 @@ class _Header extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(spacing.x0_5), // 4
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'BMTA',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
+        Container(
+          padding: EdgeInsets.all(spacing.x0_5), // 4
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            'BMTA',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
             ),
-            SizedBox(width: spacing.x1), // 8
-            Text(
-              '모든 타는 곳의 이야기',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
+          ),
         ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(LucideIcons.helpCircle),
-          color: theme.colorScheme.outline,
-          tooltip: '도움말',
+        SizedBox(width: spacing.x1), // 8
+        Text(
+          '모든 타는 곳의 이야기',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ],
     );
@@ -381,8 +370,6 @@ class _LoginCard extends StatelessWidget {
             icon: const Icon(LucideIcons.userPlus),
             label: const Text('처음 오셨나요? 회원가입'),
           ),
-          SizedBox(height: spacing.x3), // 24
-          _LoginHint(spacing: spacing),
         ],
       ),
     );
@@ -404,10 +391,8 @@ class _LoginTitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '이동 중에도\n끊기지 않는 이야기',
-          style: theme.textTheme.titleLarge?.copyWith(
-            height: 1.1,
-          ),
+          '이동 중에도 끊기지 않는 이야기',
+          style: theme.textTheme.titleLarge,
         ),
         SizedBox(height: spacing.x1), // 8
         Text(
@@ -451,48 +436,6 @@ class _LabeledField extends StatelessWidget {
         ),
         child,
       ],
-    );
-  }
-}
-
-class _LoginHint extends StatelessWidget {
-  const _LoginHint({
-    required this.spacing,
-  });
-
-  final AppSpacing spacing;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: EdgeInsets.all(spacing.x2), // 16
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.04),
-        borderRadius: theme.cardTheme.shape is RoundedRectangleBorder
-            ? (theme.cardTheme.shape! as RoundedRectangleBorder).borderRadius
-            : BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            LucideIcons.info,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
-          SizedBox(width: spacing.x1), // 8
-          Expanded(
-            child: Text(
-              '로그인은 이메일 인증 기반으로 진행되며, 실제 서비스에서는 이메일 인증 절차가 추가됩니다.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
