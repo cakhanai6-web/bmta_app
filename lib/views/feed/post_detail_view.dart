@@ -30,6 +30,7 @@ class PostDetailView extends ConsumerStatefulWidget {
 class _PostDetailViewState extends ConsumerState<PostDetailView> {
   final _commentController = TextEditingController();
   bool _isBoomUpPressed = false;
+  bool _isCommentFieldEnabled = false;
 
   @override
   void dispose() {
@@ -183,55 +184,67 @@ class _PostDetailViewState extends ConsumerState<PostDetailView> {
               child: Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _commentController,
-                      maxLength: 200,
-                      decoration: InputDecoration(
-                        hintText: '댓글을 입력하세요',
-                        counterText: '',
-                        enabled: false, // 클릭 시 로그인 체크를 위해 비활성화
-                      ),
+                    child: GestureDetector(
                       onTap: () async {
                         // 댓글 입력 필드 클릭 시 로그인 체크
-                        final isLoggedIn =
-                            await checkLoginAndShowDialog(context, ref);
-                        if (isLoggedIn) {
-                          // 로그인한 경우 → 댓글 입력 필드 활성화
-                          setState(() {
-                            // TextField를 활성화하기 위해 별도 상태 관리 필요
-                            // 간단하게 SnackBar로 안내
-                          });
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('댓글 입력 기능은 추후 구현 예정입니다'),
-                              ),
+                        if (!_isCommentFieldEnabled) {
+                          final isLoggedIn =
+                              await checkLoginAndShowDialog(context, ref);
+                          if (isLoggedIn) {
+                            // 로그인한 경우 → 댓글 입력 필드 활성화
+                            setState(() {
+                              _isCommentFieldEnabled = true;
+                            });
+                            // 포커스 주기
+                            FocusScope.of(context).requestFocus(
+                              FocusNode(),
                             );
+                            // TODO: 실제 댓글 입력 기능 구현
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('댓글 입력 기능은 추후 구현 예정입니다'),
+                                ),
+                              );
+                            }
                           }
+                          // 비로그인 상태일 경우 auth_guard에서 Alert 팝업 표시 및 LoginView로 이동
                         }
-                        // 비로그인 상태일 경우 auth_guard에서 Alert 팝업 표시 및 LoginView로 이동
                       },
+                      child: TextField(
+                        controller: _commentController,
+                        maxLength: 200,
+                        enabled: _isCommentFieldEnabled,
+                        decoration: InputDecoration(
+                          hintText: _isCommentFieldEnabled
+                              ? '댓글을 입력하세요'
+                              : '댓글을 입력하려면 탭하세요',
+                          counterText: '',
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(width: spacing.x1),
                   IconButton(
                     icon: const Icon(LucideIcons.send),
-                    onPressed: () async {
-                      // 댓글 등록 버튼 클릭 시 로그인 체크
-                      final isLoggedIn =
-                          await checkLoginAndShowDialog(context, ref);
-                      if (isLoggedIn) {
-                        // 로그인한 경우 → 댓글 등록
-                        // TODO: 실제 댓글 등록 로직 구현
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('댓글 등록 기능은 추후 구현 예정입니다'),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: _isCommentFieldEnabled
+                        ? () async {
+                            // 댓글 등록 버튼 클릭 시 로그인 체크
+                            final isLoggedIn =
+                                await checkLoginAndShowDialog(context, ref);
+                            if (isLoggedIn) {
+                              // 로그인한 경우 → 댓글 등록
+                              // TODO: 실제 댓글 등록 로직 구현
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('댓글 등록 기능은 추후 구현 예정입니다'),
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        : null,
                     tooltip: '댓글 등록',
                   ),
                 ],
