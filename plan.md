@@ -667,3 +667,338 @@ import 'views/main_scaffold.dart';
 
 **작성일**: 2026. 02. 25  
 **버전**: v2.0 (Firebase Auth 연동)
+
+---
+
+# 로그인 가드 및 초기 진입점 변경 작업 계획
+
+## 📋 작업 개요
+
+**작업 ID**: 로그인 가드 구현  
+**작업명**: 앱 시작점을 브타 피드로 변경하고, 특정 기능 접근 시 로그인 여부 확인 및 팝업 표시  
+**목표**: 앱의 시작점을 '브타 피드'로 변경하고, 특정 기능(글쓰기, 내 정보, 댓글) 접근 시 로그인 여부를 확인하여 팝업을 띄우고 이동시키는 로직을 구현한다.
+
+---
+
+## 🎯 작업 목표
+
+1. 앱 시작점을 '브타 피드'로 변경 (로그인 여부와 관계없이)
+2. 로그인 가드(Guard) 구현: 특정 기능 접근 시 로그인 여부 확인
+3. 비로그인 시 Alert 팝업 표시 및 로그인 화면으로 이동
+
+---
+
+## 📁 변경/생성 파일 목록
+
+### 수정 파일
+- `lib/main.dart` - 초기 진입점을 MainScaffold로 변경
+- `lib/views/main_scaffold.dart` - 내정보 탭 클릭 시 로그인 가드 추가
+- `lib/views/feed/feed_view.dart` - 글쓰기 버튼 클릭 시 로그인 가드 추가
+- `lib/views/feed/post_detail_view.dart` - 댓글창 클릭 시 로그인 가드 추가 (파일이 없으면 생성)
+
+---
+
+## ✅ 이번 작업에서 하는 것 (Do)
+
+### 1. 초기 진입점 수정 (`lib/main.dart`)
+
+#### 1.1 변경 내용
+- 앱 실행 시 Auth 상태와 관계없이 가장 먼저 `MainScaffold`(브타 피드 탭이 포함된 메인 구조)가 화면에 나타나도록 수정
+- 기존에 로그인 화면으로 강제 이동시키던 로직 제거
+- `authStateProvider`를 사용한 조건부 라우팅 제거
+
+#### 1.2 구현 구조
+```dart
+class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(
+      title: 'BMTA',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      home: const MainScaffold(), // 항상 MainScaffold로 시작
+    );
+  }
+}
+```
+
+### 2. 로그인 가드(Guard) 및 알림 로직 구현
+
+#### 2.1 대상 기능
+- **글쓰기 버튼 클릭** (`feed_view.dart`)
+- **하단 '내정보' 탭 클릭** (`main_scaffold.dart`)
+- **상세페이지 댓글창 클릭** (`post_detail_view.dart`)
+
+#### 2.2 로그인 체크 로직
+- `authStateProvider`를 통해 현재 로그인 상태 확인
+- `ref.read(authStateProvider)`를 사용하여 효율적으로 처리
+- 비동기 상태이므로 `.value` 또는 `.when()` 사용
+
+#### 2.3 Alert 팝업 구현
+- Flutter 기본 `showDialog` 사용
+- `app_theme.dart`의 컬러 참고하여 디자인
+- 메시지: **"로그인 전용 기능입니다."**
+- 버튼: [확인] - 클릭 시 `LoginView`로 이동
+
+#### 2.4 구현 예시
+```dart
+// 로그인 체크 헬퍼 함수 (공통 유틸리티)
+Future<bool> checkLoginAndShowDialog(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  final authState = ref.read(authStateProvider);
+  
+  return authState.when(
+    data: (user) {
+      if (user == null) {
+        // 비로그인 상태: Alert 팝업 표시
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('로그인 필요'),
+            content: const Text('로그인 전용 기능입니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // 팝업 닫기
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginView(),
+                    ),
+                  );
+                },
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+        );
+        return false;
+      }
+      return true; // 로그인 상태
+    },
+    loading: () => false, // 로딩 중이면 false
+    error: (_, __) => false, // 에러면 false
+  );
+}
+
+// 사용 예시 (feed_view.dart)
+FloatingActionButton(
+  onPressed: () async {
+    final isLoggedIn = await checkLoginAndShowDialog(context, ref);
+    if (isLoggedIn) {
+      // 글쓰기 페이지로 이동
+      Navigator.push(...);
+    }
+  },
+  child: const Icon(LucideIcons.plus),
+)
+```
+
+### 3. 각 화면별 구현 상세
+
+#### 3.1 `main_scaffold.dart` - 내정보 탭 클릭
+- `_handleMypageClick()` 메서드 수정
+- `ConsumerWidget` 또는 `Consumer`로 변경하여 `ref` 접근
+- 로그인 체크 후 비로그인 시 Alert 표시
+
+#### 3.2 `feed_view.dart` - 글쓰기 버튼 클릭
+- FloatingActionButton의 `onPressed`에 로그인 체크 추가
+- `ConsumerWidget` 또는 `Consumer`로 변경하여 `ref` 접근
+
+#### 3.3 `post_detail_view.dart` - 댓글창 클릭
+- 댓글 입력 필드 클릭 시 로그인 체크
+- 파일이 없으면 생성 필요
+- `ConsumerWidget` 또는 `Consumer`로 변경하여 `ref` 접근
+
+---
+
+## ❌ 이번 작업에서 하지 않는 것 (Do NOT)
+
+1. ❌ 회원가입/로그인 로직 수정
+   - 이미 구현된 Firebase Auth 인증 기능은 건드리지 않음
+
+2. ❌ UI 디자인 변경
+   - 알림창(Alert)은 Flutter 기본 `showDialog`를 사용
+   - `app_theme.dart`의 컬러를 참고하여 깔끔하게만 구현
+
+3. ❌ 다른 기능의 로그인 체크
+   - 글쓰기, 내정보, 댓글만 체크
+   - 다른 기능은 추후 구현
+
+---
+
+## 🏗️ 구현 상세 계획
+
+### Step 1: main.dart 수정
+
+#### 1.1 초기 진입점 변경
+- `authStateProvider.when()` 로직 제거
+- 항상 `MainScaffold`를 `home`으로 설정
+- 로딩/에러 상태 처리 제거 (MainScaffold 내부에서 처리)
+
+#### 1.2 Import 정리
+- `auth_provider.dart` import 제거 (필요 없음)
+- `login_view.dart` import 제거 (필요 없음)
+
+### Step 2: 로그인 가드 유틸리티 함수 생성
+
+#### 2.1 파일 생성
+- `lib/core/utils/auth_guard.dart` 생성 (선택적)
+- 또는 각 화면에 직접 구현
+
+#### 2.2 함수 구현
+- `checkLoginAndShowDialog()` 함수 구현
+- `authStateProvider`를 읽어서 로그인 상태 확인
+- 비로그인 시 Alert 팝업 표시 및 LoginView로 이동
+
+### Step 3: main_scaffold.dart 수정
+
+#### 3.1 ConsumerWidget으로 변경
+- `StatefulWidget` → `ConsumerStatefulWidget`으로 변경
+- 또는 `Consumer` 위젯으로 감싸기
+
+#### 3.2 _handleMypageClick 수정
+- `ref.read(authStateProvider)`로 로그인 상태 확인
+- 비로그인 시 Alert 팝업 표시
+- 로그인 시 내정보 탭으로 이동
+
+### Step 4: feed_view.dart 수정
+
+#### 4.1 ConsumerWidget으로 변경
+- `StatefulWidget` → `ConsumerStatefulWidget`으로 변경
+- 또는 `Consumer` 위젯으로 감싸기
+
+#### 4.2 글쓰기 버튼 수정
+- FloatingActionButton의 `onPressed`에 로그인 체크 추가
+- 비로그인 시 Alert 팝업 표시
+- 로그인 시 글쓰기 페이지로 이동
+
+### Step 5: post_detail_view.dart 생성/수정
+
+#### 5.1 파일 확인
+- 파일이 없으면 생성
+- 파일이 있으면 수정
+
+#### 5.2 댓글창 클릭 핸들러 추가
+- 댓글 입력 필드 클릭 시 로그인 체크
+- 비로그인 시 Alert 팝업 표시
+- 로그인 시 댓글 입력 가능
+
+---
+
+## 🎨 UI/UX 고려사항
+
+### 1. Alert 팝업 디자인
+- `app_theme.dart`의 컬러 사용
+- 제목: "로그인 필요"
+- 내용: "로그인 전용 기능입니다."
+- 버튼: [확인] - `colorScheme.primary` 사용
+
+### 2. 사용자 경험
+- 팝업 표시 후 [확인] 클릭 시 즉시 LoginView로 이동
+- 로그인 완료 후 원래 화면으로 돌아올 수 있도록 고려 (선택적)
+
+---
+
+## 🧪 테스트 시나리오
+
+### 시나리오 1: 앱 시작 시 브타 피드 표시
+**목표**: 앱을 켰을 때 로그인 여부와 상관없이 '브타 피드' 화면이 가장 먼저 보인다.
+
+1. 앱 실행 (로그아웃 상태)
+2. **브타 피드 화면이 바로 표시되는지 확인**
+3. 앱 재시작 (로그인 상태)
+4. **브타 피드 화면이 바로 표시되는지 확인**
+
+### 시나리오 2: 글쓰기 버튼 클릭 시 로그인 체크
+**목표**: 로그아웃 상태에서 '글쓰기'를 누르면 "로그인 전용 기능입니다." 팝업이 뜬다.
+
+1. 로그아웃 상태에서 브타 피드 화면 진입
+2. 우측 하단 글쓰기 버튼(FloatingActionButton) 클릭
+3. **"로그인 전용 기능입니다." Alert 팝업 표시 확인**
+4. [확인] 버튼 클릭
+5. **LoginView로 이동 확인**
+
+### 시나리오 3: 내정보 탭 클릭 시 로그인 체크
+**목표**: 로그아웃 상태에서 '내정보'를 누르면 "로그인 전용 기능입니다." 팝업이 뜬다.
+
+1. 로그아웃 상태에서 브타 피드 화면 진입
+2. 하단 네비게이션 바의 '내정보' 탭 클릭
+3. **"로그인 전용 기능입니다." Alert 팝업 표시 확인**
+4. [확인] 버튼 클릭
+5. **LoginView로 이동 확인**
+
+### 시나리오 4: 댓글창 클릭 시 로그인 체크
+**목표**: 로그아웃 상태에서 댓글창을 클릭하면 "로그인 전용 기능입니다." 팝업이 뜬다.
+
+1. 로그아웃 상태에서 브타 피드 화면 진입
+2. 게시글 클릭하여 상세페이지 진입
+3. 댓글 입력 필드 클릭
+4. **"로그인 전용 기능입니다." Alert 팝업 표시 확인**
+5. [확인] 버튼 클릭
+6. **LoginView로 이동 확인**
+
+### 시나리오 5: 로그인 상태에서 기능 접근
+**목표**: 로그인 상태에서는 모든 기능이 정상 작동한다.
+
+1. 로그인 상태에서 브타 피드 화면 진입
+2. 글쓰기 버튼 클릭 → **글쓰기 페이지로 이동 확인**
+3. 내정보 탭 클릭 → **내정보 페이지 표시 확인**
+4. 댓글창 클릭 → **댓글 입력 가능 확인**
+
+---
+
+## ✅ 완료 기준 (Done Definition)
+
+- [ ] 앱을 켰을 때 로그인 여부와 상관없이 '브타 피드' 화면이 가장 먼저 보인다.
+- [ ] 로그아웃 상태에서 '글쓰기'를 누르면 "로그인 전용 기능입니다." 팝업이 뜬다.
+- [ ] 로그아웃 상태에서 '내정보'를 누르면 "로그인 전용 기능입니다." 팝업이 뜬다.
+- [ ] 로그아웃 상태에서 댓글창을 클릭하면 "로그인 전용 기능입니다." 팝업이 뜬다.
+- [ ] 팝업의 [확인] 버튼을 누르면 로그인 화면으로 정상 이동한다.
+- [ ] 로그인 상태에서는 모든 기능이 정상 작동한다.
+
+---
+
+## 📝 참고 사항
+
+### 기존 개발된 내용 (현재 상태)
+- ✅ `main.dart`: 로그인 상태에 따라 LoginView 또는 MainScaffold 표시
+- ✅ `main_scaffold.dart`: 내정보 탭 클릭 시 임시 로그인 체크 (SnackBar만 표시)
+- ✅ `feed_view.dart`: 글쓰기 버튼 존재 (로그인 체크 없음)
+- ✅ `auth_provider.dart`: Firebase Auth 상태 관리 Provider 존재
+
+### 이번 작업에서 변경할 부분
+1. **main.dart**: 항상 MainScaffold로 시작하도록 변경
+2. **main_scaffold.dart**: 내정보 탭 클릭 시 로그인 가드 추가 (Alert 팝업)
+3. **feed_view.dart**: 글쓰기 버튼 클릭 시 로그인 가드 추가 (Alert 팝업)
+4. **post_detail_view.dart**: 댓글창 클릭 시 로그인 가드 추가 (Alert 팝업, 파일이 없으면 생성)
+
+### 디자인 시스템
+- **Alert 팝업**: Flutter 기본 `showDialog` 사용
+- **색상**: `app_theme.dart`의 컬러 참고
+- **버튼**: `colorScheme.primary` 사용
+
+### 코드 스타일
+- Riverpod 패턴 준수 (`ref.read(authStateProvider)`)
+- Clean Code 원칙
+- 한글 주석 포함 (주요 함수)
+
+---
+
+## 🔄 작업 순서
+
+1. `lib/main.dart` 수정 (초기 진입점을 MainScaffold로 변경)
+2. 로그인 가드 유틸리티 함수 구현 (선택적)
+3. `lib/views/main_scaffold.dart` 수정 (내정보 탭 클릭 시 로그인 가드)
+4. `lib/views/feed/feed_view.dart` 수정 (글쓰기 버튼 클릭 시 로그인 가드)
+5. `lib/views/feed/post_detail_view.dart` 생성/수정 (댓글창 클릭 시 로그인 가드)
+6. 테스트 및 검증
+
+---
+
+**작성일**: 2026. 02. 25  
+**버전**: v3.0 (로그인 가드 및 초기 진입점 변경)
