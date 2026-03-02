@@ -762,7 +762,7 @@ Future<bool> checkLoginAndShowDialog(
         // 비로그인 상태: Alert 팝업 표시
         showDialog(
           context: context,
-            builder: (context) => AlertDialog(
+          builder: (context) => AlertDialog(
             title: const Text('로그인 필요'),
             content: const Text('회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요.'),
             actions: [
@@ -929,7 +929,7 @@ FloatingActionButton(
 
 1. 로그아웃 상태에서 브타 피드 화면 진입
 2. 우측 하단 글쓰기 버튼(FloatingActionButton) 클릭
-3. **"로그인 전용 기능입니다." Alert 팝업 표시 확인**
+3. **"회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요." Alert 팝업 표시 확인**
 4. [확인] 버튼 클릭
 5. **LoginView로 이동 확인**
 
@@ -938,7 +938,7 @@ FloatingActionButton(
 
 1. 로그아웃 상태에서 브타 피드 화면 진입
 2. 하단 네비게이션 바의 '내정보' 탭 클릭
-3. **"로그인 전용 기능입니다." Alert 팝업 표시 확인**
+3. **"회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요." Alert 팝업 표시 확인**
 4. [확인] 버튼 클릭
 5. **LoginView로 이동 확인**
 
