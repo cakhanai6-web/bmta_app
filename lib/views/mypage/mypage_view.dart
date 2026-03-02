@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
 
@@ -328,11 +329,29 @@ class _LogoutButton extends StatelessWidget {
         children: [
           // 로그아웃 텍스트 버튼
           TextButton(
-            onPressed: () {
-              // 로그아웃 로직은 다음 단계에서 구현
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('로그아웃 (로직 미구현)')),
-              );
+            onPressed: () async {
+              try {
+                await FirebaseAuth.instance.signOut();
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('로그아웃되었습니다'),
+                    ),
+                  );
+                }
+
+                // authStateProvider가 자동으로 상태를 감지하여 LoginView로 이동
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('로그아웃 중 오류가 발생했습니다: $e'),
+                      backgroundColor: theme.colorScheme.error,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               '로그아웃',

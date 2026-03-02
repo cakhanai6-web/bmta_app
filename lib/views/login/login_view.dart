@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
 import 'signup_view.dart';
@@ -20,6 +21,7 @@ class _LoginViewState extends State<LoginView> {
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,23 +30,91 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
-  void _onLoginPressed() {
+  // Firebase Auth 에러 메시지 한글화
+  String _getFirebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return '등록되지 않은 이메일입니다';
+      case 'wrong-password':
+        return '비밀번호가 잘못되었습니다';
+      case 'invalid-email':
+        return '올바른 이메일 형식이 아닙니다';
+      case 'user-disabled':
+        return '비활성화된 계정입니다';
+      case 'too-many-requests':
+        return '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요';
+      case 'operation-not-allowed':
+        return '이 작업은 허용되지 않습니다';
+      case 'network-request-failed':
+        return '네트워크 연결을 확인해주세요';
+      default:
+        return '로그인에 실패했습니다: ${e.message ?? e.code}';
+    }
+  }
+
+  Future<void> _onLoginPressed() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // 실제 Firebase Auth 연동은 금지되어 있으므로,
-    // 현재는 콘솔 로그와 간단한 SnackBar만 노출한다.
-    // ignore: avoid_print
-    print('로그인 시도: email=$email, length=${password.length}');
+    if (email.isEmpty || password.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('이메일과 비밀번호를 입력하세요'),
+          ),
+        );
+      }
+      return;
+    }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('로그인 버튼이 눌렸습니다. (UI 프로토타입 상태)'),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(context.spacing.x2),
-        ),
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
+
+      // 성공 메시지 (선택적 - 자동 화면 전환되므로)
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('로그인되었습니다'),
+          ),
+        );
+      }
+
+      // authStateProvider가 자동으로 상태를 감지하여 MainScaffold로 이동
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = _getFirebaseAuthErrorMessage(e);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('오류가 발생했습니다: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -85,6 +155,7 @@ class _LoginViewState extends State<LoginView> {
                             emailController: _emailController,
                             passwordController: _passwordController,
                             obscurePassword: _obscurePassword,
+                            isLoading: _isLoading,
                             onTogglePasswordVisibility: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -165,6 +236,7 @@ class _LoginCard extends StatelessWidget {
     required this.emailController,
     required this.passwordController,
     required this.obscurePassword,
+    required this.isLoading,
     required this.onTogglePasswordVisibility,
     required this.onLoginPressed,
   });
@@ -175,6 +247,7 @@ class _LoginCard extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final bool obscurePassword;
+  final bool isLoading;
   final VoidCallback onTogglePasswordVisibility;
   final VoidCallback onLoginPressed;
 
@@ -247,9 +320,18 @@ class _LoginCard extends StatelessWidget {
           SizedBox(
             height: 56, // 7 * 8
             child: ElevatedButton.icon(
-              onPressed: onLoginPressed,
-              icon: const Icon(LucideIcons.logIn),
-              label: const Text('이메일로 로그인'),
+              onPressed: isLoading ? null : onLoginPressed,
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(LucideIcons.logIn),
+              label: Text(isLoading ? '처리 중...' : '이메일로 로그인'),
             ),
           ),
           SizedBox(height: spacing.x2), // 16

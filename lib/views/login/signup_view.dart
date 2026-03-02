@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
 
@@ -27,6 +28,7 @@ class _SignupViewState extends State<SignupView> {
   bool _isEmailVerified = false;
   bool _isVerificationCodeSent = false;
   bool _isTermsAgreed = false;
+  bool _isLoading = false;
 
   // Validation states
   bool _isEmailValid = false;
@@ -133,20 +135,98 @@ class _SignupViewState extends State<SignupView> {
     }
   }
 
-  // 회원가입 완료
-  void _onSignupPressed() {
-    if (!_canSubmit) return;
+  // Firebase Auth 에러 메시지 한글화
+  String _getFirebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'email-already-in-use':
+        return '이미 사용 중인 이메일입니다';
+      case 'weak-password':
+        return '비밀번호가 너무 약합니다';
+      case 'invalid-email':
+        return '올바른 이메일 형식이 아닙니다';
+      case 'user-disabled':
+        return '비활성화된 계정입니다';
+      case 'too-many-requests':
+        return '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요';
+      case 'operation-not-allowed':
+        return '이 작업은 허용되지 않습니다';
+      case 'network-request-failed':
+        return '네트워크 연결을 확인해주세요';
+      default:
+        return '회원가입에 실패했습니다: ${e.message ?? e.code}';
+    }
+  }
 
-    // TODO: Firebase 회원가입 로직 (다음 단계)
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('회원가입이 완료되었습니다. (UI 프로토타입 상태)'),
-        ),
+  // 회원가입 완료
+  Future<void> _onSignupPressed() async {
+    if (!_canSubmit || _isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Firebase 회원가입
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
 
-      // 로그인 화면으로 돌아가기
-      Navigator.pop(context);
+      // 닉네임을 displayName에 저장
+      if (credential.user != null) {
+        await credential.user!.updateDisplayName(
+          _nicknameController.text.trim(),
+        );
+        // reload()를 await하여 완료 대기
+        await credential.user!.reload();
+        
+        // 현재 사용자 정보 다시 가져오기
+        final updatedUser = FirebaseAuth.instance.currentUser;
+        if (updatedUser != null) {
+          // displayName이 제대로 반영되었는지 확인
+          // ignore: avoid_print
+          print('✅ 회원가입 완료 - 닉네임: ${updatedUser.displayName}');
+        }
+      }
+
+      // 성공 메시지 (선택적 - 자동 화면 전환되므로)
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('회원가입이 완료되었습니다'),
+          ),
+        );
+      }
+
+      // authStateProvider가 자동으로 상태를 감지하여 MainScaffold로 이동
+    } on FirebaseAuthException catch (e) {
+      // 에러 처리
+      final errorMessage = _getFirebaseAuthErrorMessage(e);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('오류가 발생했습니다: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -239,6 +319,7 @@ class _SignupViewState extends State<SignupView> {
                             onSendVerificationCode: _sendVerificationCode,
                             onVerifyCode: _verifyCode,
                             onSignupPressed: _onSignupPressed,
+                            isLoading: _isLoading,
                           ),
                         ],
                       ),
@@ -339,6 +420,7 @@ class _SignupCard extends StatelessWidget {
     required this.onSendVerificationCode,
     required this.onVerifyCode,
     required this.onSignupPressed,
+    required this.isLoading,
   });
 
   final AppSpacing spacing;
@@ -371,6 +453,7 @@ class _SignupCard extends StatelessWidget {
   final VoidCallback onSendVerificationCode;
   final VoidCallback onVerifyCode;
   final VoidCallback onSignupPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -620,9 +703,18 @@ class _SignupCard extends StatelessWidget {
           SizedBox(
             height: 56, // 7 * 8
             child: ElevatedButton.icon(
-              onPressed: canSubmit ? onSignupPressed : null,
-              icon: const Icon(LucideIcons.userPlus),
-              label: const Text('회원가입 완료'),
+              onPressed: (canSubmit && !isLoading) ? onSignupPressed : null,
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(LucideIcons.userPlus),
+              label: Text(isLoading ? '처리 중...' : '회원가입 완료'),
             ),
           ),
         ],

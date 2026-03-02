@@ -16,6 +16,7 @@ dependencies:
 
   # Firebase: 백엔드 인프라
   firebase_core: ^3.8.1
+  firebase_auth: ^5.3.1
 
   # 상태 관리: Riverpod
   flutter_riverpod: ^2.5.1
