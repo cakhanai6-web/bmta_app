@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import '../main_scaffold.dart';
 
 /// SCR-003: 내 정보 페이지 UI
 ///
@@ -339,9 +340,16 @@ class _LogoutButton extends StatelessWidget {
                       content: Text('로그아웃되었습니다'),
                     ),
                   );
-                }
 
-                // authStateProvider가 자동으로 상태를 감지하여 LoginView로 이동
+                  // MainScaffold로 이동 (비로그인 상태로 피드 탐색 가능)
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MainScaffold(),
+                    ),
+                    (route) => false, // 모든 이전 라우트 제거
+                  );
+                }
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

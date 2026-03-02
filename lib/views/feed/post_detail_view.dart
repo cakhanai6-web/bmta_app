@@ -104,8 +104,15 @@ class _PostDetailViewState extends ConsumerState<PostDetailView> {
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         // BM UP 버튼 클릭 시 로그인 체크
-                        final isLoggedIn =
-                            await checkLoginAndShowDialog(context, ref);
+                        final isLoggedIn = await checkLoginAndShowDialog(
+                          context,
+                          ref,
+                          returnData: {
+                            'postId': widget.postId,
+                            'postTitle': widget.postTitle ?? '',
+                            'postContent': widget.postContent ?? '',
+                          },
+                        );
                         if (isLoggedIn) {
                           // 로그인한 경우 → BM UP 처리
                           setState(() {
@@ -188,8 +195,15 @@ class _PostDetailViewState extends ConsumerState<PostDetailView> {
                       onTap: () async {
                         // 댓글 입력 필드 클릭 시 로그인 체크
                         if (!_isCommentFieldEnabled) {
-                          final isLoggedIn =
-                              await checkLoginAndShowDialog(context, ref);
+                          final isLoggedIn = await checkLoginAndShowDialog(
+                            context,
+                            ref,
+                            returnData: {
+                              'postId': widget.postId,
+                              'postTitle': widget.postTitle ?? '',
+                              'postContent': widget.postContent ?? '',
+                            },
+                          );
                           if (isLoggedIn) {
                             // 로그인한 경우 → 댓글 입력 필드 활성화
                             setState(() {
@@ -230,8 +244,15 @@ class _PostDetailViewState extends ConsumerState<PostDetailView> {
                     onPressed: _isCommentFieldEnabled
                         ? () async {
                             // 댓글 등록 버튼 클릭 시 로그인 체크
-                            final isLoggedIn =
-                                await checkLoginAndShowDialog(context, ref);
+                            final isLoggedIn = await checkLoginAndShowDialog(
+                              context,
+                              ref,
+                              returnData: {
+                                'postId': widget.postId,
+                                'postTitle': widget.postTitle ?? '',
+                                'postContent': widget.postContent ?? '',
+                              },
+                            );
                             if (isLoggedIn) {
                               // 로그인한 경우 → 댓글 등록
                               // TODO: 실제 댓글 등록 로직 구현

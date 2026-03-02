@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import 'login_view.dart';
 
 /// SCR-002: 회원가입 화면 UI
 ///
@@ -190,16 +191,25 @@ class _SignupViewState extends State<SignupView> {
         }
       }
 
-      // 성공 메시지 (선택적 - 자동 화면 전환되므로)
+      // 회원가입 완료 후 명시적으로 로그아웃 (LoginView로 이동하기 위해)
+      await FirebaseAuth.instance.signOut();
+
+      // 성공 메시지
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('회원가입이 완료되었습니다'),
+            content: Text('회원가입이 완료되었습니다. 로그인해주세요.'),
+          ),
+        );
+
+        // LoginView로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginView(),
           ),
         );
       }
-
-      // authStateProvider가 자동으로 상태를 감지하여 MainScaffold로 이동
     } on FirebaseAuthException catch (e) {
       // 에러 처리
       final errorMessage = _getFirebaseAuthErrorMessage(e);

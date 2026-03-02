@@ -9,13 +9,19 @@ import '../../views/login/login_view.dart';
 /// 특정 기능 접근 시 로그인 여부를 확인하고,
 /// 비로그인 상태일 경우 Alert 팝업을 표시한 후 LoginView로 이동시킵니다.
 /// 
+/// [returnData]: 로그인 성공 후 복귀할 페이지 정보 (선택적)
+///   - postId: 상세페이지로 복귀할 경우 게시글 ID
+///   - postTitle: 상세페이지로 복귀할 경우 게시글 제목
+///   - postContent: 상세페이지로 복귀할 경우 게시글 내용
+/// 
 /// 반환값:
 /// - `true`: 로그인 상태 (기능 사용 가능)
 /// - `false`: 비로그인 상태 (Alert 팝업 표시됨)
 Future<bool> checkLoginAndShowDialog(
   BuildContext context,
-  WidgetRef ref,
-) async {
+  WidgetRef ref, {
+  Map<String, dynamic>? returnData,
+}) async {
   final authState = ref.read(authStateProvider);
 
   return authState.when(
@@ -35,6 +41,9 @@ Future<bool> checkLoginAndShowDialog(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const LoginView(),
+                      settings: RouteSettings(
+                        arguments: returnData, // 리턴 경로 정보 전달
+                      ),
                     ),
                   );
                 },

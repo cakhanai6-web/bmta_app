@@ -3,6 +3,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import 'package:bmta_app/views/main_scaffold.dart';
+import 'package:bmta_app/views/feed/post_detail_view.dart';
 import 'signup_view.dart';
 
 /// SCR-001: 로그인 화면 UI
@@ -79,16 +81,50 @@ class _LoginViewState extends State<LoginView> {
         password: password,
       );
 
-      // 성공 메시지 (선택적 - 자동 화면 전환되므로)
+      // 성공 메시지
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('로그인되었습니다'),
           ),
         );
-      }
 
-      // authStateProvider가 자동으로 상태를 감지하여 MainScaffold로 이동
+        // 리턴 경로 확인 (RouteSettings arguments에서)
+        final args = ModalRoute.of(context)?.settings.arguments;
+        Map<String, dynamic>? returnData;
+
+        if (args is Map<String, dynamic>) {
+          returnData = args;
+        }
+
+        // 리턴 경로가 있으면 해당 경로로, 없으면 MainScaffold로
+        if (returnData != null &&
+            returnData['postId'] != null &&
+            returnData['postTitle'] != null &&
+            returnData['postContent'] != null) {
+          // 상세페이지로 복귀
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailView(
+                postId: returnData!['postId'] as String,
+                postTitle: returnData['postTitle'] as String,
+                postContent: returnData['postContent'] as String,
+              ),
+            ),
+            (route) => route.isFirst, // 첫 화면(MainScaffold)까지만 유지
+          );
+        } else {
+          // MainScaffold로 이동
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainScaffold(),
+            ),
+            (route) => false, // 모든 이전 라우트 제거
+          );
+        }
+      }
     } on FirebaseAuthException catch (e) {
       final errorMessage = _getFirebaseAuthErrorMessage(e);
 
