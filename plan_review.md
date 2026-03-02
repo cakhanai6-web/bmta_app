@@ -586,3 +586,413 @@ void main() {
 
 **검토 완료일**: 2026. 02. 25  
 **검토자**: AI Assistant
+
+---
+
+# 로그인 가드 및 초기 진입점 변경 작업 계획 검토 보고서
+
+## 📋 검토 개요
+
+**검토 대상**: `plan.md` (로그인 가드 및 초기 진입점 변경 작업 계획)  
+**검토 기준**: 
+- 로직 문제 여부
+- 향후 확장성 관점
+- 기존 코드와의 일관성
+- PRD 및 메뉴 설명서와의 일치 여부
+- 작업 지침 준수 여부
+
+**검토일**: 2026. 02. 25  
+**버전**: v3.0 (로그인 가드 및 초기 진입점 변경)
+
+---
+
+## ✅ 잘 설계된 부분
+
+### 1. 초기 진입점 변경 계획
+- ✅ PRD와 메뉴 설명서의 요구사항과 일치: "앱을 실행하면 최초로 진입하는 화면" (브타 피드)
+- ✅ 로그인 여부와 관계없이 브타 피드를 먼저 보여주는 것이 사용자 경험에 유리
+- ✅ 기존 Firebase Auth 연동과의 충돌 없음
+
+### 2. 로그인 가드 구현 방식
+- ✅ Riverpod의 `ref.read(authStateProvider)`를 사용한 효율적인 로그인 체크
+- ✅ 공통 유틸리티 함수로 중복 코드 방지
+- ✅ Alert 팝업을 통한 명확한 사용자 안내
+
+### 3. 기존 코드와의 일관성
+- ✅ 기존 UI 구조 유지
+- ✅ 디자인 시스템 (`app_theme.dart`) 준수
+- ✅ Riverpod 패턴 일관성 유지
+
+---
+
+## ⚠️ 발견된 문제점 및 개선 사항
+
+### 🔴 심각한 문제 (즉시 수정 필요)
+
+#### 1. Alert 메시지 불일치
+**문제점:**
+- Plan.md: "로그인 전용 기능입니다."
+- 메뉴 설명서: "회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요."
+
+**영향:**
+- 메뉴 설명서와 불일치
+- 사용자 경험 일관성 저하
+
+**해결 방안:**
+- 메뉴 설명서의 메시지를 사용하도록 수정
+- 또는 두 메시지를 통합하여 더 명확한 메시지 사용
+- 예: "로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?"
+
+#### 2. 브타 피드 클릭 시 로그인 체크 누락
+**문제점:**
+- 메뉴 설명서: "브타 피드 클릭 시 로그인 여부를 체크하여 로그인된 회원은 상세페이지로 이동하고 로그인이 안된 회원은 Alert 창이 보여진다"
+- Plan.md: 브타 피드 클릭 시 로그인 체크가 없음
+
+**영향:**
+- 메뉴 설명서 요구사항 미충족
+- 비로그인 사용자가 피드 상세를 볼 수 없어야 하는데 현재 계획에는 없음
+
+**해결 방안:**
+- `feed_view.dart`의 `FeedCard` 클릭 시 로그인 체크 추가
+- 또는 `post_detail_view.dart` 진입 시 로그인 체크 추가
+- Plan.md에 이 부분 추가 필요
+
+#### 3. 로그인 가드 함수의 비동기 처리 문제
+**문제점:**
+- Plan.md의 예시 코드에서 `checkLoginAndShowDialog()`가 `Future<bool>`을 반환하지만
+- `authStateProvider.when()`은 동기적으로 값을 반환하지 않음
+- `ref.read(authStateProvider)`는 `AsyncValue<User?>`를 반환하므로 `.when()` 사용 시 즉시 반환 불가
+
+**영향:**
+- 코드가 정상 작동하지 않을 수 있음
+- 로그인 체크 로직 오류
+
+**해결 방안:**
+```dart
+// 올바른 구현
+Future<bool> checkLoginAndShowDialog(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  final authState = ref.read(authStateProvider);
+  
+  // AsyncValue의 현재 값을 확인
+  return authState.when(
+    data: (user) {
+      if (user == null) {
+        // 비로그인 상태: Alert 팝업 표시
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('로그인 필요'),
+            content: const Text('회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // 팝업 닫기
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginView(),
+                    ),
+                  );
+                },
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+        );
+        return false;
+      }
+      return true; // 로그인 상태
+    },
+    loading: () {
+      // 로딩 중이면 로그인하지 않은 것으로 간주 (안전한 선택)
+      return false;
+    },
+    error: (_, __) {
+      // 에러 발생 시 로그인하지 않은 것으로 간주 (안전한 선택)
+      return false;
+    },
+  );
+}
+```
+
+### 🟡 중간 문제 (개선 권장)
+
+#### 4. main.dart의 auth_provider import 제거 문제
+**문제점:**
+- Plan.md에서 "`auth_provider.dart` import 제거 (필요 없음)"이라고 했지만
+- 로그인 가드 함수에서 `ref.read(authStateProvider)`를 사용하므로 각 화면에서 `auth_provider.dart`를 import해야 함
+- `main.dart`에서만 제거하는 것이 맞음
+
+**해결 방안:**
+- Plan.md의 설명을 명확히 수정
+- `main.dart`에서만 import 제거
+- 각 화면(`main_scaffold.dart`, `feed_view.dart` 등)에서는 `auth_provider.dart` import 필요
+
+#### 5. post_detail_view.dart 파일 존재 여부 확인
+**문제점:**
+- Plan.md에서 "파일이 없으면 생성"이라고 했지만
+- 현재 파일이 존재하지 않음
+- 댓글 기능이 구현되어 있지 않은 상태에서 댓글창 클릭 로그인 체크를 구현하기 어려움
+
+**해결 방안:**
+- `post_detail_view.dart` 파일이 없으면 기본 구조만 생성
+- 댓글 입력 필드 UI만 구현하고 로그인 체크 추가
+- 실제 댓글 기능은 추후 구현
+
+#### 6. 로그인 완료 후 원래 화면으로 복귀
+**문제점:**
+- Plan.md에서 "로그인 완료 후 원래 화면으로 돌아올 수 있도록 고려 (선택적)"이라고 했지만
+- 구체적인 구현 방법이 없음
+- 현재는 로그인 후 MainScaffold로 이동하므로 원래 화면으로 복귀 불가
+
+**해결 방안:**
+- 로그인 시도 시 이전 화면 정보를 저장
+- 로그인 완료 후 `Navigator.pop()` 또는 `Navigator.pushReplacement()` 사용
+- 또는 로그인 후 항상 MainScaffold로 이동 (현재 방식 유지)
+
+### 🟢 경미한 문제 (선택적 개선)
+
+#### 7. 로그인 가드 유틸리티 함수 위치
+**문제점:**
+- Plan.md에서 "`lib/core/utils/auth_guard.dart` 생성 (선택적)"이라고 했지만
+- 각 화면에 직접 구현할지 공통 함수로 만들지 명확하지 않음
+
+**해결 방안:**
+- 공통 함수로 만드는 것이 코드 재사용성에 유리
+- `lib/core/utils/auth_guard.dart` 생성 권장
+- 또는 `lib/providers/auth_provider.dart`에 확장 함수로 추가
+
+#### 8. Alert 팝업 디자인
+**문제점:**
+- Plan.md에서 "`app_theme.dart`의 컬러 참고"라고 했지만
+- Flutter 기본 `AlertDialog`는 테마를 자동으로 적용하므로 추가 작업 불필요할 수 있음
+
+**해결 방안:**
+- 기본 `AlertDialog` 사용 시 테마 자동 적용 확인
+- 필요 시 커스텀 `AlertDialog` 위젯 생성
+
+---
+
+## 🔮 향후 확장성 관점 검토
+
+### ✅ 잘 고려된 부분
+
+1. **로그인 가드 구조**
+   - 공통 함수로 분리하여 재사용 가능
+   - 향후 다른 기능에도 쉽게 적용 가능
+
+2. **초기 진입점 변경**
+   - PRD 요구사항과 일치
+   - 사용자 경험 개선
+
+### ⚠️ 확장성 개선 제안
+
+#### 1. 로그인 가드 확장
+**현재 구조:**
+```dart
+// 단순히 로그인 여부만 체크
+Future<bool> checkLoginAndShowDialog(...)
+```
+
+**개선 제안:**
+```dart
+// 다양한 옵션을 지원하는 로그인 가드
+enum LoginGuardAction {
+  showDialog,      // Alert 팝업 표시
+  navigate,        // 바로 로그인 화면으로 이동
+  showSnackBar,    // SnackBar만 표시
+}
+
+Future<bool> checkLoginWithAction(
+  BuildContext context,
+  WidgetRef ref, {
+  LoginGuardAction action = LoginGuardAction.showDialog,
+  String? customMessage,
+  VoidCallback? onLoginRequired,
+}) async {
+  // 로그인 체크 로직
+  // action에 따라 다른 동작 수행
+}
+```
+
+**장점:**
+- 다양한 상황에 대응 가능
+- 재사용성 향상
+
+#### 2. 로그인 후 복귀 기능
+**개선 제안:**
+```dart
+// 로그인 시도 시 현재 화면 정보 저장
+class LoginGuard {
+  static String? _returnRoute;
+  
+  static Future<bool> checkLogin(
+    BuildContext context,
+    WidgetRef ref, {
+    String? returnRoute,
+  }) async {
+    _returnRoute = returnRoute ?? ModalRoute.of(context)?.settings.name;
+    // 로그인 체크 로직
+  }
+  
+  static void navigateAfterLogin(BuildContext context) {
+    if (_returnRoute != null) {
+      Navigator.pushNamed(context, _returnRoute!);
+      _returnRoute = null;
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScaffold()),
+      );
+    }
+  }
+}
+```
+
+**장점:**
+- 사용자 경험 개선
+- 로그인 후 원래 작업하려던 화면으로 복귀 가능
+
+---
+
+## 📝 PRD 및 메뉴 설명서와의 일치 여부
+
+### ✅ 일치하는 부분
+
+1. **초기 진입점**
+   - PRD: "접속 시 디폴트인 브타 피드 메뉴에서 전체로 필터링된 모든 게시글을 한 눈으로 본다"
+   - 메뉴 설명서: "앱을 실행하면 최초로 진입하는 화면" (브타 피드)
+   - Plan.md: ✅ 일치
+
+2. **비로그인 회원 읽기 가능**
+   - PRD: "비 로그인 회원은 읽기만 가능"
+   - Plan.md: ✅ 일치 (브타 피드를 먼저 보여줌)
+
+3. **글쓰기 버튼 로그인 체크**
+   - 메뉴 설명서: "글쓰기 버튼 클릭 시 로그인 여부 판단"
+   - Plan.md: ✅ 일치
+
+4. **내정보 탭 로그인 체크**
+   - 메뉴 설명서: "로그인을 안한 사용자는 하단 네비게이션 바의 내정보를 클릭하면 로그인 페이지로 이동된다"
+   - Plan.md: ✅ 일치
+
+### ❌ 불일치하는 부분
+
+#### 1. Alert 메시지 내용
+**메뉴 설명서:**
+> "회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요."
+
+**Plan.md:**
+> "로그인 전용 기능입니다."
+
+**해결 방안:**
+- 메뉴 설명서의 메시지를 사용하도록 Plan.md 수정
+
+#### 2. 브타 피드 클릭 시 로그인 체크
+**메뉴 설명서:**
+> "브타 피드 클릭 시 로그인 여부를 체크하여 로그인된 회원은 상세페이지로 이동하고 로그인이 안된 회원은 Alert 창이 보여진다"
+
+**Plan.md:**
+- 브타 피드 클릭 시 로그인 체크가 없음
+
+**해결 방안:**
+- Plan.md에 브타 피드 클릭 시 로그인 체크 추가
+- `feed_view.dart`의 `FeedCard` 클릭 핸들러에 로그인 체크 추가
+
+#### 3. 댓글창 클릭 시 로그인 체크
+**메뉴 설명서:**
+- 댓글 입력 필드에 대한 명시적인 로그인 체크 설명은 없지만, "댓글을 입력하면"이라는 표현으로 댓글 작성 시 로그인 필요함을 암시
+
+**Plan.md:**
+- 댓글창 클릭 시 로그인 체크 계획 있음
+
+**해결 방안:**
+- Plan.md의 계획이 적절함
+- 다만 `post_detail_view.dart` 파일이 없으므로 생성 필요
+
+---
+
+## 🛠️ 작업 지침 준수 여부
+
+### ✅ 준수하는 부분
+- ✅ 폴더 구조: 기존 구조 유지
+- ✅ 디자인 시스템: `app_theme.dart`의 컬러 사용
+- ✅ Riverpod 사용: `ref.read(authStateProvider)` 활용
+- ✅ 한글 주석 포함 계획
+
+### ⚠️ 개선 필요 부분
+
+#### 1. 로그인 가드 함수의 비동기 처리
+**작업 지침:**
+- Riverpod 패턴 준수
+
+**Plan.md 현황:**
+- `authStateProvider.when()` 사용은 적절하지만, 함수 시그니처와 실제 동작이 일치하지 않을 수 있음
+
+**해결 방안:**
+- Plan.md의 예시 코드를 실제 동작하는 코드로 수정
+
+---
+
+## 🎯 종합 개선 권장 사항
+
+### 우선순위 1 (즉시 수정)
+1. ✅ Alert 메시지를 메뉴 설명서와 일치시키기 ("회원만 이용할 수 있는 서비스입니다. 로그인 페이지로 이동할게요.")
+2. ✅ 브타 피드 클릭 시 로그인 체크 추가
+3. ✅ 로그인 가드 함수의 비동기 처리 수정 (실제 동작하는 코드로)
+
+### 우선순위 2 (개선 권장)
+4. ✅ `post_detail_view.dart` 파일 생성 계획 명확화
+5. ✅ 로그인 가드 유틸리티 함수를 공통 파일로 생성
+6. ✅ 로그인 완료 후 원래 화면으로 복귀 기능 고려
+
+### 우선순위 3 (향후 확장 고려)
+7. ✅ 로그인 가드 확장 (다양한 액션 지원)
+8. ✅ 로그인 후 복귀 기능 구현
+
+---
+
+## 📊 검토 결과 요약
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| 로직 문제 | ⚠️ | 로그인 가드 함수 비동기 처리, 브타 피드 클릭 체크 누락 |
+| 확장성 | ✅ | 기본 구조는 양호, 로그인 가드 확장 권장 |
+| 기존 코드 일관성 | ✅ | 기존 구조와 잘 일치 |
+| PRD/메뉴 설명서 일치 | ⚠️ | Alert 메시지, 브타 피드 클릭 체크 불일치 |
+| 작업 지침 준수 | ✅ | 대부분 준수 |
+
+**전체 평가**: ⭐⭐⭐⭐ (4/5)
+- 로그인 가드 및 초기 진입점 변경 계획은 전반적으로 잘 수립되어 있음
+- 몇 가지 메뉴 설명서와의 불일치와 로직 문제가 있으나, 전반적으로 양호
+- 우선순위 1 항목만 수정하면 바로 구현 가능
+
+---
+
+## 📌 추가 권장 사항
+
+### 1. 로그인 가드 유틸리티 함수 생성
+공통 함수로 만들어서 재사용성 향상:
+```dart
+// lib/core/utils/auth_guard.dart
+class AuthGuard {
+  static Future<bool> checkLoginAndNavigate(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    // 로그인 체크 및 Alert 표시 로직
+  }
+}
+```
+
+### 2. 테스트 시나리오 보완
+- 브타 피드 클릭 시나리오 추가
+- 로그인 후 원래 화면 복귀 시나리오 추가
+
+---
+
+**검토 완료일**: 2026. 02. 25  
+**검토자**: AI Assistant
