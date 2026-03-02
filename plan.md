@@ -479,96 +479,143 @@ import 'views/main_scaffold.dart';
 ## 🧪 테스트 시나리오
 
 ### 시나리오 1: 회원가입 → 자동 로그인 → 피드 화면 진입
+**목표**: 실제 이메일로 가입 후 로그인하면 '브타 피드' 화면으로 진입한다.
+
 1. 앱 실행 → 로그인 화면 표시 확인
-2. `[회원가입]` 버튼 클릭 → 회원가입 화면 이동
+2. `[처음 오셨나요? 회원가입]` 버튼 클릭 → 회원가입 화면 이동
 3. 이메일 입력: `test@example.com`
-4. `[인증번호 발송]` 버튼 클릭 → Mock 처리 확인
-5. 인증번호 입력: `123456`
-6. `[확인]` 버튼 클릭 → 인증 완료 확인
-7. 닉네임 입력: `테스트유저`
-8. 비밀번호 입력: `password123` (8자 이상 + 영문+숫자)
-9. 약관 동의 체크
-10. `[회원가입 완료]` 버튼 클릭
-11. Firebase 회원가입 성공 확인
-12. 자동으로 MainScaffold(피드 화면)로 이동 확인
+4. `[인증번호 발송]` 버튼 클릭 → Mock 처리 확인 (실제 발송 없음)
+5. 인증번호 입력: `123456` → 인증 완료 확인
+6. 닉네임 입력: `테스트유저` (2-10자, 한글/영문/숫자)
+7. 비밀번호 입력: `password123` (8자 이상 + 영문+숫자 조합)
+8. 약관 동의 체크
+9. `[회원가입 완료]` 버튼 클릭
+10. **Firebase 회원가입 성공 확인** (`createUserWithEmailAndPassword()` 호출)
+11. **닉네임이 `displayName`에 저장되는지 확인** (`updateDisplayName()` 호출)
+12. **자동으로 MainScaffold(피드 화면)로 이동 확인** (`authStateProvider`가 상태 변경 감지)
 13. 로그인 상태 유지 확인
 
 ### 시나리오 2: 로그인 → 피드 화면 진입
+**목표**: 기존 계정으로 로그인하면 '브타 피드' 화면으로 진입한다.
+
 1. 앱 실행 → 로그인 화면 표시
-2. 이메일 입력: `test@example.com`
+2. 이메일 입력: `test@example.com` (시나리오 1에서 생성한 계정)
 3. 비밀번호 입력: `password123`
 4. `[이메일로 로그인]` 버튼 클릭
-5. Firebase 로그인 성공 확인
-6. 자동으로 MainScaffold(피드 화면)로 이동 확인
+5. **Firebase 로그인 성공 확인** (`signInWithEmailAndPassword()` 호출)
+6. **자동으로 MainScaffold(피드 화면)로 이동 확인** (`authStateProvider`가 상태 변경 감지)
 
 ### 시나리오 3: 로그아웃 → 로그인 화면 복귀
+**목표**: '내 정보'에서 [로그아웃]을 누르면 즉시 '로그인' 화면으로 튕겨 나간다.
+
 1. 피드 화면에서 `[내정보]` 탭 클릭
 2. `[로그아웃]` 버튼 클릭
-3. Firebase 로그아웃 성공 확인
-4. 자동으로 LoginView로 이동 확인
-5. 로그인 상태 해제 확인
+3. **Firebase 로그아웃 성공 확인** (`signOut()` 호출)
+4. **자동으로 LoginView로 이동 확인** (`authStateProvider`가 상태 변경 감지)
+5. 로그인 상태 해제 확인 (다시 로그인해야 함)
 
 ### 시나리오 4: 앱 재시작 시 로그인 상태 유지
-1. 로그인 상태에서 앱 완전 종료
+**목표**: 앱을 완전히 껐다 켜도, 이전에 로그인했다면 로그인 화면 없이 바로 피드가 나타난다.
+
+1. 로그인 상태에서 앱 완전 종료 (백그라운드에서도 종료)
 2. 앱 다시 실행
-3. 로그인 화면 없이 바로 MainScaffold(피드 화면) 표시 확인
-4. 이전 로그인 상태가 유지되는지 확인
+3. **로그인 화면 없이 바로 MainScaffold(피드 화면) 표시 확인**
+4. **이전 로그인 상태가 유지되는지 확인** (`authStateChanges()`가 이전 세션 감지)
+5. `[내정보]` 탭에서 사용자 정보 확인 (닉네임 등)
 
 ### 시나리오 5: 에러 처리
-1. 중복 이메일로 회원가입 시도
-   - 에러 메시지: "이미 사용 중인 이메일입니다" 표시
-   - 회원가입 실패 확인
-2. 잘못된 비밀번호로 로그인 시도
-   - 에러 메시지: "비밀번호가 잘못되었습니다" 표시
-   - 로그인 실패 확인
-3. 존재하지 않는 이메일로 로그인 시도
-   - 에러 메시지: "등록되지 않은 이메일입니다" 표시
-   - 로그인 실패 확인
+**목표**: 중복 이메일, 잘못된 비밀번호 등의 에러를 SnackBar로 표시한다.
+
+1. **중복 이메일로 회원가입 시도**
+   - 시나리오 1에서 사용한 `test@example.com`로 다시 회원가입 시도
+   - 에러 메시지: "이미 사용 중인 이메일입니다" SnackBar 표시 확인
+   - 회원가입 실패 확인 (화면 이동 없음)
+2. **잘못된 비밀번호로 로그인 시도**
+   - 이메일: `test@example.com`
+   - 비밀번호: `wrongpassword`
+   - 에러 메시지: "비밀번호가 잘못되었습니다" SnackBar 표시 확인
+   - 로그인 실패 확인 (화면 이동 없음)
+3. **존재하지 않는 이메일로 로그인 시도**
+   - 이메일: `nonexistent@example.com`
+   - 비밀번호: `anypassword`
+   - 에러 메시지: "등록되지 않은 이메일입니다" SnackBar 표시 확인
+   - 로그인 실패 확인 (화면 이동 없음)
+4. **에러 메시지 스타일 확인**
+   - 모든 에러 메시지가 `colorScheme.error` 배경색을 사용하는지 확인
+   - SnackBar로 표시되는지 확인
 
 ---
 
-## ✅ 완료 기준 체크리스트
+## ✅ 완료 기준 (Done Definition)
 
+### 필수 완료 항목
+- [ ] **실제 이메일로 가입 후 로그인하면 '브타 피드' 화면으로 진입한다.**
+  - 회원가입 완료 시 자동으로 로그인 상태가 되어 MainScaffold(피드)로 이동
+  - 또는 회원가입 후 별도로 로그인해도 MainScaffold로 이동
+- [ ] **'내 정보'에서 [로그아웃]을 누르면 즉시 '로그인' 화면으로 튕겨 나간다.**
+  - 로그아웃 버튼 클릭 시 Firebase `signOut()` 호출
+  - `authStateProvider`가 상태 변경을 감지하여 자동으로 LoginView로 전환
+- [ ] **앱을 완전히 껐다 켜도, 이전에 로그인했다면 로그인 화면 없이 바로 피드가 나타난다.**
+  - Firebase Auth의 영구 세션 유지 기능 활용
+  - 앱 재시작 시 `authStateChanges()`가 이전 로그인 상태를 감지
+  - 로그인 상태면 MainScaffold, 로그아웃 상태면 LoginView 표시
+
+### 구현 완료 체크리스트
 - [ ] `pubspec.yaml`에 `firebase_auth` 패키지 추가 및 설치 완료
 - [ ] `lib/providers/auth_provider.dart` 생성 및 구현 완료
+  - [ ] `StreamProvider<User?>`로 `authStateChanges()` 감시
 - [ ] `signup_view.dart`에서 Firebase 회원가입 연동 완료
   - [ ] `createUserWithEmailAndPassword()` 호출
   - [ ] 닉네임을 `updateDisplayName()`으로 저장
-  - [ ] 에러 처리 (중복 이메일 등)
+  - [ ] 에러 처리 (중복 이메일 등) - SnackBar로 표시
 - [ ] `login_view.dart`에서 Firebase 로그인 연동 완료
   - [ ] `signInWithEmailAndPassword()` 호출
-  - [ ] 에러 처리 (잘못된 이메일/비밀번호 등)
+  - [ ] 에러 처리 (잘못된 이메일/비밀번호 등) - SnackBar로 표시
 - [ ] `mypage_view.dart`에서 Firebase 로그아웃 연동 완료
   - [ ] `signOut()` 호출
 - [ ] `main.dart`에서 인증 상태에 따른 자동 라우팅 구현 완료
   - [ ] `ConsumerWidget`으로 변경
   - [ ] `authStateProvider` 구독
-  - [ ] 로그인 상태: MainScaffold 표시
-  - [ ] 로그아웃 상태: LoginView 표시
+  - [ ] 로그인 상태 (`user != null`): MainScaffold 표시
+  - [ ] 로그아웃 상태 (`user == null`): LoginView 표시
   - [ ] 로딩 상태: 로딩 인디케이터 표시
-- [ ] 실제 이메일로 가입 후 로그인하면 '브타 피드' 화면으로 진입
-- [ ] '내 정보'에서 [로그아웃]을 누르면 즉시 '로그인' 화면으로 이동
-- [ ] 앱을 완전히 껐다 켜도, 이전에 로그인했다면 로그인 화면 없이 바로 피드가 나타남
 - [ ] 이메일 인증번호 Mock 처리 유지 ("123456"으로 입력 시 인증 완료)
-- [ ] 모든 에러 메시지는 SnackBar로 표시 (app_theme.dart의 error 컬러 사용)
+- [ ] 모든 에러 메시지는 SnackBar로 표시 (app_theme.dart의 `colorScheme.error` 사용)
 
 ---
 
 ## 📝 참고 사항
 
-### 기존 개발된 내용
-- ✅ `signup_view.dart`: UI 및 유효성 검사 완료 (Mock 처리)
-- ✅ `login_view.dart`: UI 완료 (Mock 처리)
-- ✅ `mypage_view.dart`: 로그아웃 버튼 UI 완료 (로직 미구현)
-- ✅ `main.dart`: MainScaffold로 시작 (인증 체크 없음)
+### 기존 개발된 내용 (현재 상태)
+- ✅ `signup_view.dart`: UI 및 유효성 검사 완료, Mock 인증번호 처리 ("123456")
+  - 이메일, 인증번호, 닉네임, 비밀번호 입력 필드 구현 완료
+  - 유효성 검사 로직 구현 완료 (비밀번호 8자 이상 + 영문+숫자 조합)
+  - `_onSignupPressed()` 메서드는 Mock 처리 상태 (TODO 주석)
+- ✅ `login_view.dart`: UI 완료, Mock 로그인 처리
+  - 이메일, 비밀번호 입력 필드 구현 완료
+  - `_onLoginPressed()` 메서드는 Mock 처리 상태
+- ✅ `mypage_view.dart`: 로그아웃 버튼 UI 완료, 로직 미구현
+  - `_LogoutButton` 위젯에 SnackBar만 표시하는 상태
+- ✅ `main.dart`: MainScaffold로 시작, 인증 체크 없음
+  - `StatelessWidget`으로 구현됨
+  - 항상 MainScaffold를 표시
 - ✅ `pubspec.yaml`: firebase_core, flutter_riverpod 이미 있음
+  - `firebase_auth` 패키지는 없음 (추가 필요)
 
 ### 이번 작업에서 변경할 부분
-1. **signup_view.dart**: `_onSignupPressed()` 메서드에 Firebase Auth 연동
-2. **login_view.dart**: `_onLoginPressed()` 메서드에 Firebase Auth 연동
-3. **mypage_view.dart**: `_LogoutButton`의 `onPressed`에 Firebase Auth 연동
-4. **main.dart**: `MyApp`을 `ConsumerWidget`으로 변경하고 인증 상태 구독
-5. **auth_provider.dart**: 새로 생성
+1. **pubspec.yaml**: `firebase_auth: ^5.3.1` 패키지 추가
+2. **auth_provider.dart**: 새로 생성 - `StreamProvider<User?>`로 `authStateChanges()` 감시
+3. **signup_view.dart**: `_onSignupPressed()` 메서드에 Firebase Auth 연동
+   - `createUserWithEmailAndPassword()` 호출
+   - `updateDisplayName()`으로 닉네임 저장
+   - 에러 처리 (중복 이메일 등)
+4. **login_view.dart**: `_onLoginPressed()` 메서드에 Firebase Auth 연동
+   - `signInWithEmailAndPassword()` 호출
+   - 에러 처리 (잘못된 이메일/비밀번호 등)
+5. **mypage_view.dart**: `_LogoutButton`의 `onPressed`에 Firebase Auth 연동
+   - `signOut()` 호출
+6. **main.dart**: `MyApp`을 `ConsumerWidget`으로 변경하고 인증 상태 구독
+   - `authStateProvider`를 구독하여 자동 화면 전환
 
 ### 디자인 시스템
 - **색상**: Connect Blue (#2563EB), Error Red (app_theme.dart 참조)
