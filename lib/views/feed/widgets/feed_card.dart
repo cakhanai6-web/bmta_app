@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import '../post_detail_view.dart';
 
 /// 피드 게시글 데이터 모델
 class FeedPost {
@@ -52,7 +53,17 @@ class FeedCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(radii.md * 2), // 32
       child: InkWell(
         onTap: () {
-          // 게시글 상세 페이지로 이동 (현재는 Mock)
+          // 게시글 상세 페이지로 이동 (로그인 체크 없이 바로 이동)
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailView(
+                postId: post.id,
+                postTitle: post.title,
+                postContent: post.content,
+              ),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(radii.md * 2),
         child: Container(

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:bmta_app/core/theme/app_theme.dart';
+import 'package:bmta_app/core/utils/auth_guard.dart';
 import 'widgets/feed_card.dart';
 
 /// 브타 피드 화면: 2단 필터 바 + 게시글 리스트
-class FeedView extends StatefulWidget {
+class FeedView extends ConsumerStatefulWidget {
   const FeedView({super.key});
 
   @override
-  State<FeedView> createState() => _FeedViewState();
+  ConsumerState<FeedView> createState() => _FeedViewState();
 }
 
-class _FeedViewState extends State<FeedView> {
+class _FeedViewState extends ConsumerState<FeedView> {
   String _selectedTransport = '전체';
   String _selectedCategory = '전체';
 

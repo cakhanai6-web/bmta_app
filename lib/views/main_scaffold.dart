@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../core/utils/auth_guard.dart';
 import 'feed/feed_view.dart';
 import 'mypage/mypage_view.dart';
 
 /// 메인 스캐폴드: 하단 네비게이션 바를 포함한 앱의 메인 구조
-class MainScaffold extends StatefulWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({super.key});
 
   @override
-  State<MainScaffold> createState() => _MainScaffoldState();
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 2; // 기본: BMTA 피드
-  
-  // 로그인 상태 (임시: 실제 인증 시스템 연동 전까지는 true로 가정)
-  // TODO: Firebase Auth 또는 실제 인증 시스템과 연동
-  bool _isLoggedIn = true;
 
   // 각 탭에 해당하는 화면
   final List<Widget> _pages = [
@@ -80,6 +78,28 @@ class _MainScaffoldState extends State<MainScaffold> {
         index: _currentIndex,
         children: _pages,
       ),
+      floatingActionButton: _currentIndex == 2
+          ? FloatingActionButton(
+              onPressed: () async {
+                // 글쓰기 버튼 클릭 시 로그인 체크
+                final isLoggedIn = await checkLoginAndShowDialog(context, ref);
+                if (isLoggedIn) {
+                  // 로그인한 경우 → 글쓰기 페이지로 이동
+                  // TODO: 글쓰기 페이지 구현 후 Navigator.push
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('글쓰기 페이지 (준비 중)'),
+                      ),
+                    );
+                  }
+                }
+                // 비로그인 상태일 경우 auth_guard에서 Alert 팝업 표시 및 LoginView로 이동
+              },
+              child: const Icon(LucideIcons.plus),
+              tooltip: '글쓰기',
+            )
+          : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -168,19 +188,15 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 
   /// 내정보 탭 클릭 핸들러 (로그인 체크 포함)
-  void _handleMypageClick() {
-    if (!_isLoggedIn) {
-      // 로그인하지 않은 경우 → 로그인 페이지로 이동
-      // TODO: 실제 로그인 페이지 구현 후 Navigator.push로 이동
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('로그인이 필요합니다. (로그인 페이지는 추후 구현 예정)'),
-        ),
-      );
-    } else {
+  Future<void> _handleMypageClick() async {
+    final isLoggedIn = await checkLoginAndShowDialog(context, ref);
+    if (isLoggedIn) {
       // 로그인한 경우 → 내정보 페이지 표시
-      setState(() => _currentIndex = 3);
+      if (mounted) {
+        setState(() => _currentIndex = 3);
+      }
     }
+    // 비로그인 상태일 경우 auth_guard에서 Alert 팝업 표시 및 LoginView로 이동
   }
 
   String _getTitle() {
