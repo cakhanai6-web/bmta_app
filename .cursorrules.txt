@@ -67,3 +67,11 @@ Accent: #F59E0B (Mobility Amber)
 닉네임 외의 개인정보(이메일 등)는 커뮤니티 UI에 노출하지 마세요.
 
 포인트 관련 로직은 반드시 Firestore Transaction을 사용해 무결성을 보장하세요.
+
+6. Git Workflow Rules
+
+Do NOT create any new branches.
+
+Always work on the currently active branch (main).
+
+All file changes must be applied directly to the existing codebase.

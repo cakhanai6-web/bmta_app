@@ -231,10 +231,10 @@ class _FeedViewState extends State<FeedView> {
     return Container(
       padding: EdgeInsets.all(spacing.x3), // 24
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            Color(0xFF2563EB),
-            Color(0xFF3B82F6),
+            const Color(0xFF2563EB),
+            const Color(0xFF3B82F6),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
